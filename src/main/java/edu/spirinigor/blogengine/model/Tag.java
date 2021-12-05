@@ -3,7 +3,9 @@ package edu.spirinigor.blogengine.model;
 import lombok.Data;
 
 import javax.persistence.*;
+
 import java.util.List;
+
 
 @Entity
 @Table(name = "tags")
@@ -15,6 +17,7 @@ public class Tag {
 
     @Column
     private String name;
+
 
     @ManyToMany
     @JoinTable(name = "tag2post"
