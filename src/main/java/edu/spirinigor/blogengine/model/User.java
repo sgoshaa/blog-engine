@@ -35,11 +35,11 @@ public class User {
     @Column
     private String photo;
 
-    @OneToMany(mappedBy = "userId",
+    @OneToMany(mappedBy = "user",
               cascade = CascadeType.ALL)
     private List<Post> postList;
 
-    @OneToMany(mappedBy = "userId",
+    @OneToMany(mappedBy = "user",
                 cascade = CascadeType.ALL)
     private List<PostComment> postComments;
 

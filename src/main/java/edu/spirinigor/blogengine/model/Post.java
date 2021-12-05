@@ -22,12 +22,13 @@ public class Post {
     @Enumerated(value = EnumType.STRING)
     private ModerationStatus moderationStatus;
 
-    @Column(name ="moderator_id")
-    private Integer moderatorId;
+    @ManyToOne
+    @JoinColumn(name ="moderator_id")
+    private User moderator;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private User userId;
+    private User user;
 
     @Column
     private LocalDateTime time;
@@ -38,7 +39,7 @@ public class Post {
     @Column(name = "view_count")
     private Integer viewCount;
 
-    @OneToMany(mappedBy = "postId",
+    @OneToMany(mappedBy = "post",
                 cascade = CascadeType.ALL)
     private List<PostComment> postComments;
 

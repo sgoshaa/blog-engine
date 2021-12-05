@@ -16,16 +16,17 @@ public class PostComment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "parent_id")
-    private Integer parentId;
+    @ManyToOne
+    @JoinColumn(name = "parent_id")
+    private PostComment parent;
 
     @ManyToOne
     @JoinColumn(name = "post_id")
-    private Post postId;
+    private Post post;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private User userId;
+    private User user;
 
     @Column
     private LocalDateTime time;
