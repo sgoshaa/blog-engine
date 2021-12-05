@@ -42,4 +42,9 @@ public class Post {
                 cascade = CascadeType.ALL)
     private List<PostComment> postComments;
 
+    @ManyToMany
+    @JoinTable(name = "tag2post"
+            ,joinColumns = {@JoinColumn(name = "post_id")}
+            ,inverseJoinColumns = {@JoinColumn(name = "tag_id")})
+    private List<Tag> tags;
 }

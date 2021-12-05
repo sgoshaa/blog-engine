@@ -4,6 +4,9 @@ import lombok.Data;
 
 import javax.persistence.*;
 
+import java.util.List;
+
+
 @Entity
 @Table(name = "tags")
 @Data
@@ -14,4 +17,11 @@ public class Tag {
 
     @Column
     private String name;
+
+
+    @ManyToMany
+    @JoinTable(name = "tag2post"
+            ,joinColumns = {@JoinColumn(name = "tag_id")}
+            ,inverseJoinColumns = {@JoinColumn(name = "post_id")})
+    private List<Tag> tagList;
 }
