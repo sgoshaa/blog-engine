@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="JpaBuddyIdeaProjectConfig">
+  <component name="JpaBuddyIdeaProjectConfig" ddlActionDbType="mysql">
     <option name="flywayDirectory" value="db/migration" />
     <option name="defaultUnitInitialized" value="true" />
     <option name="sourceModelValue" value="Default" />
-    <option name="targetDbValue" value="442b03c1-46ec-4be3-8711-ea9681cd4b59" />
+    <option name="targetDbValue" value="97938e2c-189b-4716-bc98-01582be1dc36" />
   </component>
 </project>
