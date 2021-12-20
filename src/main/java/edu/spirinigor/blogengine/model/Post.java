@@ -48,4 +48,8 @@ public class Post {
             ,joinColumns = {@JoinColumn(name = "post_id")}
             ,inverseJoinColumns = {@JoinColumn(name = "tag_id")})
     private List<Tag> tags;
+
+    @OneToMany(mappedBy = "post",
+            cascade = CascadeType.ALL)
+    private List<PostVotes> postVotes;
 }
