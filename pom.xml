@@ -48,15 +48,20 @@
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.liquibase</groupId>-->
+<!--                <artifactId>liquibase-maven-plugin</artifactId>-->
+<!--                <configuration>-->
+<!--                    <propertyFile>application.yaml</propertyFile>-->
+<!--                    <systemProperties>-->
+<!--                        <user.name>user</user.name>-->
+<!--                    </systemProperties>-->
+<!--                </configuration>-->
+<!--            </plugin>-->
             <plugin>
-                <groupId>org.liquibase</groupId>
-                <artifactId>liquibase-maven-plugin</artifactId>
-                <configuration>
-                    <propertyFile>application.yaml</propertyFile>
-                    <systemProperties>
-                        <user.name>user</user.name>
-                    </systemProperties>
-                </configuration>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-maven-plugin</artifactId>
+                <version>8.2.1</version>
             </plugin>
         </plugins>
     </build>
@@ -68,6 +73,11 @@
         <org.mapstruct.version>1.4.2.Final</org.mapstruct.version>
         <org.projectlombok.version>1.18.20</org.projectlombok.version>
         <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
+        <flyway.user>root</flyway.user>
+        <flyway.password>root</flyway.password>
+        <flyway.schemas>blog_engine</flyway.schemas>
+        <flyway.url>jdbc:mysql://localhost:3306/blog_engine?createDatabaseIfNotExist=true&amp;allowPublicKeyRetrieval=true&amp;?serverTimezone=UTC</flyway.url>
+        <flyway.locations>db/migration</flyway.locations>
     </properties>
 
     <dependencies>
@@ -102,11 +112,24 @@
             <version>${org.projectlombok.version}</version>
             <scope>provided</scope>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.liquibase</groupId>-->
+<!--            <artifactId>liquibase-core</artifactId>-->
+<!--            <version>4.4.0</version>-->
+<!--        </dependency>-->
+        <!-- https://mvnrepository.com/artifact/org.flywaydb/flyway-maven-plugin -->
         <dependency>
-            <groupId>org.liquibase</groupId>
-            <artifactId>liquibase-core</artifactId>
-            <version>4.4.0</version>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-maven-plugin</artifactId>
+            <version>8.2.1</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>8.0.27</version>
+        </dependency>
+
     </dependencies>
 
 </project>

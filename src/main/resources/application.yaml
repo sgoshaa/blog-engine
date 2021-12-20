@@ -1,8 +1,11 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/blog_engine
-    username: postgres
-    password: postgres
+#    url: jdbc:postgresql://localhost:5432/blog_engine
+#    username: postgres
+#    password: postgres
+    url: jdbc:mysql://localhost:3306/blog_engine?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true
+    username: root
+    password: root
   jpa:
     show-sql: false
     hibernate:
@@ -11,3 +14,10 @@ spring:
     enabled: true
     change-log: classpath:db/dbchangelog-master.xml
     drop-first: true
+
+blog.title: DevPub
+blog.subtitle: Рассказы разработчиков
+blog.phone: +7 903 666-44-55
+blog.email: sgoshaa@yandex.ru
+blog.copyright: Игорь Спирин
+blog.copyrightFrom: 2021
