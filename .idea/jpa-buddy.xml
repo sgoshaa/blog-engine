@@ -4,6 +4,6 @@
     <option name="flywayDirectory" value="db/migration" />
     <option name="defaultUnitInitialized" value="true" />
     <option name="sourceModelValue" value="Default" />
-    <option name="targetDbValue" value="442b03c1-46ec-4be3-8711-ea9681cd4b59" />
+    <option name="targetDbValue" value="fcfb9661-8caf-4245-b16a-92d70e935d66" />
   </component>
 </project>

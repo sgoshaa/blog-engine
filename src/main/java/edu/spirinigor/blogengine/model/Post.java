@@ -15,10 +15,10 @@ public class Post {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "is_active")
+    @Column(name = "is_active",nullable = false)
     private Short isActive;
 
-    @Column(name = "moderation_status")
+    @Column(name = "moderation_status", nullable = false)
     @Enumerated(value = EnumType.STRING)
     private ModerationStatus moderationStatus;
 
@@ -27,16 +27,16 @@ public class Post {
     private User moderator;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id",nullable = false)
     private User user;
 
-    @Column
+    @Column(nullable = false)
     private LocalDateTime time;
 
-    @Column
+    @Column(nullable = false)
     private String text;
 
-    @Column(name = "view_count")
+    @Column(name = "view_count", nullable = false)
     private Integer viewCount;
 
     @OneToMany(mappedBy = "post",

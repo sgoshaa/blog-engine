@@ -14,12 +14,12 @@ public class CaptchaCode {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column
+    @Column(nullable = false)
     private LocalDateTime time;
 
-    @Column
+    @Column(nullable = false)
     private String code;
 
-    @Column(name = "secret_code")
+    @Column(name = "secret_code",nullable = false)
     private String secretCode;
 }

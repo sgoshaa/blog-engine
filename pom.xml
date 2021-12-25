@@ -48,16 +48,6 @@
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
-<!--            <plugin>-->
-<!--                <groupId>org.liquibase</groupId>-->
-<!--                <artifactId>liquibase-maven-plugin</artifactId>-->
-<!--                <configuration>-->
-<!--                    <propertyFile>application.yaml</propertyFile>-->
-<!--                    <systemProperties>-->
-<!--                        <user.name>user</user.name>-->
-<!--                    </systemProperties>-->
-<!--                </configuration>-->
-<!--            </plugin>-->
             <plugin>
                 <groupId>org.flywaydb</groupId>
                 <artifactId>flyway-maven-plugin</artifactId>
@@ -112,12 +102,6 @@
             <version>${org.projectlombok.version}</version>
             <scope>provided</scope>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.liquibase</groupId>-->
-<!--            <artifactId>liquibase-core</artifactId>-->
-<!--            <version>4.4.0</version>-->
-<!--        </dependency>-->
-        <!-- https://mvnrepository.com/artifact/org.flywaydb/flyway-maven-plugin -->
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-maven-plugin</artifactId>
