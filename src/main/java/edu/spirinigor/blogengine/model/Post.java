@@ -34,6 +34,9 @@ public class Post {
     private LocalDateTime time;
 
     @Column(nullable = false)
+    private String title;
+
+    @Column(nullable = false)
     private String text;
 
     @Column(name = "view_count", nullable = false)
