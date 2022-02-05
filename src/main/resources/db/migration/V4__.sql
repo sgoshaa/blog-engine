@@ -50,7 +50,7 @@ ALTER TABLE post_comments
     MODIFY text VARCHAR (255) NOT NULL;
 
 ALTER TABLE posts
-    MODIFY text VARCHAR (255) NOT NULL;
+    MODIFY text TEXT NOT NULL;
 
 ALTER TABLE captcha_codes
     MODIFY time datetime NOT NULL;

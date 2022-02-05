@@ -10,10 +10,6 @@ spring:
     show-sql: false
     hibernate:
       ddl-auto: validate
-  liquibase:
-    enabled: true
-    change-log: classpath:db/dbchangelog-master.xml
-    drop-first: true
 
 blog.title: DevPub
 blog.subtitle: Рассказы разработчиков
