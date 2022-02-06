@@ -21,6 +21,6 @@ public class ApiPostController {
             @RequestParam(value = "offset", defaultValue = "0") Integer offset,
             @RequestParam(value = "limit", defaultValue = "20") Integer limit,
             @RequestParam(value = "mode", defaultValue = "recent") String mode) {
-        return new ResponseEntity<>(postService.getListPost(), HttpStatus.OK);
+        return new ResponseEntity<>(postService.getListPost(offset,limit,mode), HttpStatus.OK);
     }
 }

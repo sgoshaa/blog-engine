@@ -1,16 +1,16 @@
 package edu.spirinigor.blogengine.mapper;
 
 import edu.spirinigor.blogengine.dto.PostDTO;
+import edu.spirinigor.blogengine.mapper.converter.DateConverter;
 import edu.spirinigor.blogengine.model.Post;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper
+@Mapper(uses = DateConverter.class)
 public interface PostMapper {
 
     @Mapping(target = "id",source = "post.id")
-//    @Mapping(target = "timeStamp",source = "post.time")
-    @Mapping(target = "timeStamp" , ignore = true)
+    @Mapping(target = "timeStamp",source = "post.time",qualifiedByName = "convertDateToLong")
     @Mapping(target = "announce",expression ="java(post.getText().substring(0, Math.min(post.getText().length(), 150)))")
     @Mapping(target = "likeCount",expression = "java(post.getPostVotes().stream().filter(postVotes -> postVotes.getValue().equals(1)).count())")
     @Mapping(target = "dislikeCount",expression = "java(post.getPostVotes().stream().filter(postVotes -> postVotes.getValue().equals(-1)).count())")

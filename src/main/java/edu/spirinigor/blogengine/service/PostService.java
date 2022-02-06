@@ -9,6 +9,7 @@ import edu.spirinigor.blogengine.repository.PostRepository;
 import org.mapstruct.factory.Mappers;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -24,7 +25,7 @@ public class PostService {
         this.postRepository = postRepository;
     }
 
-    public PostResponse getListPost(){
+    public PostResponse getListPost(Integer offset, Integer limit, String mode){
 
         List<Post> postList = postRepository.findAll();
         List<PostDTO>posts = new ArrayList<>();
