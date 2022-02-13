@@ -1,6 +1,5 @@
 package edu.spirinigor.blogengine.mapper.converter;
 
-import jdk.jfr.Name;
 import org.mapstruct.Named;
 import org.springframework.stereotype.Component;
 

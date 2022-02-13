@@ -7,11 +7,11 @@ import edu.spirinigor.blogengine.mapper.PostMapper;
 import edu.spirinigor.blogengine.model.Post;
 import edu.spirinigor.blogengine.repository.PostRepository;
 import org.mapstruct.factory.Mappers;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-
-import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 
@@ -26,12 +26,23 @@ public class PostService {
     }
 
     public PostResponse getListPost(Integer offset, Integer limit, String mode){
-
-        List<Post> postList = postRepository.findAll();
+        Page<Post> postList = null;
         List<PostDTO>posts = new ArrayList<>();
-        postList.forEach(post -> posts.add(postMapper.postToPostDTO(post)));
+
+        if (mode.equals("recent")|| mode.equals("")){
+            int page = offset/limit;
+            postList = postRepository.findAll(PageRequest.of(page, limit, Sort.by("time").descending()));
+            postList.forEach(post -> posts.add(postMapper.postToPostDTO(post)));
+        }
+        if (mode.equalsIgnoreCase("popular")){
+            int page = offset/limit;
+            postList = postRepository.findAll(PageRequest.of(page, limit, Sort.by("time").descending()));
+            postList.forEach(post -> posts.add(postMapper.postToPostDTO(post)));
+        }
+
+
         PostResponse postResponse = new PostResponse();
-        postResponse.setCount(postList.size());
+        postResponse.setCount(postList.getTotalElements());
         postResponse.setPosts(posts);
 
         return postResponse;
