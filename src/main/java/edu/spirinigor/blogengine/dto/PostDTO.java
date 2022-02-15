@@ -18,9 +18,9 @@ public class PostDTO {
 
     private String announce;
 
-    private Integer likeCount;
+    private Long likeCount;
 
-    private Integer dislikeCount;
+    private Long dislikeCount;
 
     private Integer commentCount;
 

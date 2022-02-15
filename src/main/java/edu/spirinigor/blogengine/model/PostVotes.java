@@ -1,6 +1,7 @@
 package edu.spirinigor.blogengine.model;
 
 import lombok.Data;
+import lombok.ToString;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -8,6 +9,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "post_votes")
 @Data
+@ToString
 public class PostVotes {
 
     @Id
@@ -15,16 +17,16 @@ public class PostVotes {
     private Integer id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id",nullable = false)
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "post_id")
+    @JoinColumn(name = "post_id",nullable = false)
     private Post post;
 
-    @Column
+    @Column(nullable = false)
     private LocalDateTime time;
 
-    @Column
+    @Column(nullable = false)
     private Short value;
 }

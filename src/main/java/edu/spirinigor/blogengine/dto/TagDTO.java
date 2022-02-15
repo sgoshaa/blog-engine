@@ -14,13 +14,4 @@ public class TagDTO {
     private Double weight;
 
 }
-//{
-//        "tags":
-//        [
-//        {"name":"Java", "weight":1},
-//        {"name":"Spring", "weight":0.56},
-//        {"name":"Hibernate", "weight":0.22},
-//        {"name":"Hadoop", "weight":0.17},
-//        ]
-//        }
 

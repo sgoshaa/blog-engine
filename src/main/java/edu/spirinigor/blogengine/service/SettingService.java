@@ -2,8 +2,7 @@ package edu.spirinigor.blogengine.service;
 
 import edu.spirinigor.blogengine.api.response.SettingResponse;
 import edu.spirinigor.blogengine.model.GlobalSetting;
-import edu.spirinigor.blogengine.repositories.GlobalSettingRepository;
-import org.apache.maven.lifecycle.internal.LifecycleStarter;
+import edu.spirinigor.blogengine.repository.GlobalSettingRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

@@ -1,6 +1,7 @@
 package edu.spirinigor.blogengine.model;
 
 import lombok.Data;
+import lombok.ToString;
 
 import javax.persistence.*;
 
@@ -10,12 +11,13 @@ import java.util.List;
 @Entity
 @Table(name = "tags")
 @Data
+@ToString
 public class Tag {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column
+    @Column(nullable = false)
     private String name;
 
 

@@ -23,7 +23,7 @@ CREATE TABLE post_comments
     post_id   INT          NULL,
     user_id   INT          NULL,
     time      datetime     NULL,
-    text      VARCHAR(255) NULL,
+    text      TEXT     NULL,
     CONSTRAINT pk_post_comments PRIMARY KEY (id)
 );
 
@@ -45,7 +45,7 @@ CREATE TABLE posts
     moderator_id      INT          NULL,
     user_id           INT          NULL,
     time              datetime     NULL,
-    text              VARCHAR(255) NULL,
+    text              TEXT      NULL,
     view_count        INT          NULL,
     CONSTRAINT pk_posts PRIMARY KEY (id)
 );

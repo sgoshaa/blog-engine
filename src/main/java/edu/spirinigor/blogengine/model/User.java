@@ -14,19 +14,19 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "is_moderator")
+    @Column(name = "is_moderator", nullable = false)
     private Short isModerator;
 
-    @Column(name = "reg_time")
+    @Column(name = "reg_time",nullable = false )
     private LocalDateTime regTime;
 
-    @Column
+    @Column(nullable = false)
     private String name;
 
-    @Column
+    @Column(nullable = false)
     private String email;
 
-    @Column
+    @Column(nullable = false)
     private String password;
 
     @Column

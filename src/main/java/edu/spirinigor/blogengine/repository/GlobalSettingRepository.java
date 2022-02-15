@@ -1,4 +1,4 @@
-package edu.spirinigor.blogengine.repositories;
+package edu.spirinigor.blogengine.repository;
 
 import edu.spirinigor.blogengine.model.GlobalSetting;
 import org.springframework.data.jpa.repository.JpaRepository;

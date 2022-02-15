@@ -19,8 +19,8 @@ public class ApiPostController {
     @GetMapping("post")
     public ResponseEntity<PostResponse> getListPost(
             @RequestParam(value = "offset", defaultValue = "0") Integer offset,
-            @RequestParam(value = "limit", defaultValue = "20") Integer limit,
+            @RequestParam(value = "limit", defaultValue = "10") Integer limit,
             @RequestParam(value = "mode", defaultValue = "recent") String mode) {
-        return new ResponseEntity<>(postService.getListPost(), HttpStatus.OK);
+        return new ResponseEntity<>(postService.getListPost(offset,limit,mode), HttpStatus.OK);
     }
 }
