@@ -9,7 +9,7 @@ import javax.annotation.processing.Generated;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2022-02-06T16:19:31+0500",
+    date = "2022-02-15T22:02:21+0500",
     comments = "version: 1.4.2.Final, compiler: javac, environment: Java 11.0.13 (Amazon.com Inc.)"
 )
 public class PostMapperImpl implements PostMapper {
@@ -31,8 +31,8 @@ public class PostMapperImpl implements PostMapper {
         postDTO.setViewCount( post.getViewCount() );
 
         postDTO.setAnnounce( post.getText().substring(0, Math.min(post.getText().length(), 150)) );
-        postDTO.setLikeCount( post.getPostVotes().stream().filter(postVotes -> postVotes.getValue().equals(1)).count() );
-        postDTO.setDislikeCount( post.getPostVotes().stream().filter(postVotes -> postVotes.getValue().equals(-1)).count() );
+        postDTO.setLikeCount( post.getPostVotes().stream().filter(postVotes -> postVotes.getValue().equals((short)1)).count() );
+        postDTO.setDislikeCount( post.getPostVotes().stream().filter(postVotes -> postVotes.getValue().equals((short)-1)).count() );
         postDTO.setCommentCount( post.getPostComments().size() );
 
         return postDTO;

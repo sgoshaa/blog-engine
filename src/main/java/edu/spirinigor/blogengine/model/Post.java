@@ -2,6 +2,7 @@ package edu.spirinigor.blogengine.model;
 
 import edu.spirinigor.blogengine.model.enums.ModerationStatus;
 import lombok.Data;
+import lombok.ToString;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -10,6 +11,7 @@ import java.util.List;
 @Entity
 @Table(name = "posts")
 @Data
+@ToString
 public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -52,7 +54,7 @@ public class Post {
             ,inverseJoinColumns = {@JoinColumn(name = "tag_id")})
     private List<Tag> tags;
 
-    @OneToMany(mappedBy = "post",
+    @OneToMany(mappedBy = "post",fetch = FetchType.LAZY,
             cascade = CascadeType.ALL)
     private List<PostVotes> postVotes;
 }

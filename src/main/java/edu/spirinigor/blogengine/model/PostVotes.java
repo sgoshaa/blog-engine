@@ -1,6 +1,7 @@
 package edu.spirinigor.blogengine.model;
 
 import lombok.Data;
+import lombok.ToString;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -8,6 +9,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "post_votes")
 @Data
+@ToString
 public class PostVotes {
 
     @Id
