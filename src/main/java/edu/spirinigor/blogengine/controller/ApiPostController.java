@@ -21,6 +21,14 @@ public class ApiPostController {
             @RequestParam(value = "offset", defaultValue = "0") Integer offset,
             @RequestParam(value = "limit", defaultValue = "10") Integer limit,
             @RequestParam(value = "mode", defaultValue = "recent") String mode) {
-        return new ResponseEntity<>(postService.getListPost(offset,limit,mode), HttpStatus.OK);
+        return new ResponseEntity<>(postService.getListPost(offset, limit, mode), HttpStatus.OK);
+    }
+
+    @GetMapping("post/search")
+    public ResponseEntity<PostResponse> searchPost(
+            @RequestParam(value = "offset", defaultValue = "0") Integer offset,
+            @RequestParam(value = "limit", defaultValue = "10") Integer limit,
+            @RequestParam(value = "query", defaultValue = "") String query) {
+        return new ResponseEntity<>(postService.searchPost(offset, limit, query), HttpStatus.OK);
     }
 }

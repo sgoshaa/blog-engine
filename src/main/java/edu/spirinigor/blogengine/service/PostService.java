@@ -10,6 +10,7 @@ import org.mapstruct.factory.Mappers;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,23 +27,24 @@ public class PostService {
         this.pagination = pagination;
     }
 
-    public PostResponse getListPost(Integer offset, Integer limit, String mode){
+    public PostResponse getListPost(Integer offset, Integer limit, String mode) {
         Page<Post> postList;
-        List<PostDTO>posts = new ArrayList<>();
-        switch (mode){
+        List<PostDTO> posts = new ArrayList<>();
+        switch (mode) {
             case "popular":
-               postList = postRepository.findPopularPost(pagination.getPage(offset,limit));
-               postList.forEach(post -> posts.add(postMapper.postToPostDTO(post)));
-               break;
+                postList = postRepository.findPopularPost(pagination.getPage(offset, limit));
+                postList.forEach(post -> posts.add(postMapper.postToPostDTO(post)));
+                break;
             case "best":
-                postList = postRepository.findBestPost(pagination.getPage(offset,limit));
+                postList = postRepository.findBestPost(pagination.getPage(offset, limit));
                 postList.forEach(post -> posts.add(postMapper.postToPostDTO(post)));
                 break;
             case "early"://early - сортировать по дате публикации, выводить сначала старые
                 postList = postRepository.findAll(pagination.getPage(offset, limit, Sort.by("time").ascending()));
                 postList.forEach(post -> posts.add(postMapper.postToPostDTO(post)));
                 break;
-            default://recent - сортировать по дате публикации, выводить сначала новые (если mode не задан, использовать это значение по умолчанию)
+            default://recent - сортировать по дате публикации, выводить сначала новые (если mode не задан
+                // , использовать это значение по умолчанию)
                 postList = postRepository.findAll(pagination.getPage(offset, limit, Sort.by("time").descending()));
                 postList.forEach(post -> posts.add(postMapper.postToPostDTO(post)));
                 break;
@@ -53,5 +55,14 @@ public class PostService {
         postResponse.setPosts(posts);
 
         return postResponse;
+    }
+
+    public PostResponse searchPost(Integer offset, Integer limit, String query) {
+
+        if (query.isEmpty()){
+            return getListPost(offset,limit,"recent");
+        }
+
+        return new PostResponse();
     }
 }
