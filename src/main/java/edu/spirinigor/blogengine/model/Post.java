@@ -24,10 +24,12 @@ public class Post {
     @Enumerated(value = EnumType.STRING)
     private ModerationStatus moderationStatus;
 
+    @ToString.Exclude
     @ManyToOne
     @JoinColumn(name ="moderator_id")
     private User moderator;
 
+    @ToString.Exclude
     @ManyToOne
     @JoinColumn(name = "user_id",nullable = false)
     private User user;
@@ -44,16 +46,19 @@ public class Post {
     @Column(name = "view_count", nullable = false)
     private Integer viewCount;
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "post",
                 cascade = CascadeType.ALL)
     private List<PostComment> postComments;
 
+    @ToString.Exclude
     @ManyToMany
     @JoinTable(name = "tag2post"
             ,joinColumns = {@JoinColumn(name = "post_id")}
             ,inverseJoinColumns = {@JoinColumn(name = "tag_id")})
     private List<Tag> tags;
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "post",fetch = FetchType.LAZY,
             cascade = CascadeType.ALL)
     private List<PostVotes> postVotes;

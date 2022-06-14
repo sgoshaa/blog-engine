@@ -4,10 +4,11 @@ import edu.spirinigor.blogengine.model.Post;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
 
-public interface PostRepository extends JpaRepository<Post,Integer> {
+public interface PostRepository extends JpaRepository<Post,Integer>, JpaSpecificationExecutor<Post> {
 
 //   popular - сортировать по убыванию количества комментариев (посты без комментариев выводить)
     @Query("SELECT p FROM Post p LEFT JOIN  PostComment pc ON p.id = pc.post GROUP BY  p.id ORDER BY count(pc.text) DESC")

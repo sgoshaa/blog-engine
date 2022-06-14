@@ -5,11 +5,14 @@ import edu.spirinigor.blogengine.dto.UserDTO;
 import edu.spirinigor.blogengine.mapper.converter.DateConverter;
 import edu.spirinigor.blogengine.model.Post;
 import edu.spirinigor.blogengine.model.User;
+import java.util.ArrayList;
+import java.util.List;
 import javax.annotation.processing.Generated;
+import org.springframework.data.domain.Page;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2022-06-10T17:12:49+0500",
+    date = "2022-06-14T17:08:03+0500",
     comments = "version: 1.4.2.Final, compiler: javac, environment: Java 11.0.14.1 (Amazon.com Inc.)"
 )
 public class PostMapperImpl implements PostMapper {
@@ -36,6 +39,20 @@ public class PostMapperImpl implements PostMapper {
         postDTO.setCommentCount( post.getPostComments().size() );
 
         return postDTO;
+    }
+
+    @Override
+    public List<PostDTO> postToListDto(Page<Post> posts) {
+        if ( posts == null ) {
+            return null;
+        }
+
+        List<PostDTO> list = new ArrayList<PostDTO>();
+        for ( Post post : posts ) {
+            list.add( postToPostDTO( post ) );
+        }
+
+        return list;
     }
 
     protected UserDTO userToUserDTO(User user) {
