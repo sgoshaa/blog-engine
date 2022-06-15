@@ -111,4 +111,9 @@ public class PostService {
         postResponse.setPosts(new ArrayList<>());
         return postResponse;
     }
+
+    public PostResponse getPostByTag(Integer offset, Integer limit, String tag) {
+
+        return new PostResponse();
+    }
 }
