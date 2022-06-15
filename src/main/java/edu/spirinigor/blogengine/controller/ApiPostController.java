@@ -5,7 +5,12 @@ import edu.spirinigor.blogengine.api.response.PostResponse;
 import edu.spirinigor.blogengine.service.PostService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.sql.Date;
 
 @RestController
 @RequestMapping("/api/")
@@ -37,5 +42,13 @@ public class ApiPostController {
     public ResponseEntity<CalendarResponse> getCalendar(
             @RequestParam(value = "year", defaultValue = "0") Integer year) {
         return new ResponseEntity<>(postService.getCalendar(year), HttpStatus.OK);
+    }
+
+    @GetMapping("post/byDate")
+    public ResponseEntity<PostResponse> getPostByDate(
+            @RequestParam(value = "offset", defaultValue = "0") Integer offset,
+            @RequestParam(value = "limit", defaultValue = "10") Integer limit,
+            @RequestParam(value = "date", defaultValue = "") String date) {
+        return new ResponseEntity<>(postService.getPostByDate(offset, limit, Date.valueOf(date)), HttpStatus.OK);
     }
 }

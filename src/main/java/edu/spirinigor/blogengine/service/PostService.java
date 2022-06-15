@@ -12,7 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.criteria.CriteriaBuilder;
+import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -53,28 +53,22 @@ public class PostService {
                 postList = postRepository.findAll(pagination.getPage(offset, limit, Sort.by("time").descending()));
                 break;
         }
-
         PostResponse postResponse = new PostResponse();
         postResponse.setCount(postList.getTotalElements());
         postResponse.setPosts(postMapper.postToListDto(postList));
-
         return postResponse;
     }
 
     public PostResponse searchPost(Integer offset, Integer limit, String query) {
-
         if (query.isEmpty()) {
             return getListPost(offset, limit, "recent");
         }
-
         Page<Post> all =
                 postRepository.findAll(postSpecification.getSpecification(query), pagination.getPage(offset, limit));
-        PostResponse postResponse = new PostResponse();
         if (all.getTotalElements() == 0) {
-            postResponse.setCount(0L);
-            postResponse.setPosts(new ArrayList<>());
-            return postResponse;
+            return getEmptyPostResponse();
         }
+        PostResponse postResponse = new PostResponse();
         postResponse.setPosts(postMapper.postToListDto(all));
         postResponse.setCount(all.getTotalElements());
         return postResponse;
@@ -93,13 +87,28 @@ public class PostService {
         for (Map.Entry<LocalDate, List<Post>> entry : entries) {
             hashMap.put(entry.getKey(), entry.getValue().size());
         }
-
         List<Integer> years = postRepository.getCalendar();
-
         CalendarResponse calendarResponse = new CalendarResponse();
         calendarResponse.setYears(years);
         calendarResponse.setPosts(hashMap);
-
         return calendarResponse;
+    }
+
+    public PostResponse getPostByDate(Integer offset, Integer limit, Date date) {
+        Page<Post> postByDate = postRepository.getPostByDate(date, pagination.getPage(offset, limit));
+        if (postByDate.getTotalElements() == 0) {
+            return getEmptyPostResponse();
+        }
+        PostResponse postResponse = new PostResponse();
+        postResponse.setPosts(postMapper.postToListDto(postByDate));
+        postResponse.setCount(postByDate.getTotalElements());
+        return postResponse;
+    }
+
+    private PostResponse getEmptyPostResponse() {
+        PostResponse postResponse = new PostResponse();
+        postResponse.setCount(0L);
+        postResponse.setPosts(new ArrayList<>());
+        return postResponse;
     }
 }
