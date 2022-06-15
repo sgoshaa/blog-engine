@@ -1,5 +1,6 @@
 package edu.spirinigor.blogengine.controller;
 
+import edu.spirinigor.blogengine.api.response.CalendarResponse;
 import edu.spirinigor.blogengine.api.response.PostResponse;
 import edu.spirinigor.blogengine.service.PostService;
 import org.springframework.http.HttpStatus;
@@ -30,5 +31,11 @@ public class ApiPostController {
             @RequestParam(value = "limit", defaultValue = "10") Integer limit,
             @RequestParam(value = "query", defaultValue = "") String query) {
         return new ResponseEntity<>(postService.searchPost(offset, limit, query), HttpStatus.OK);
+    }
+
+    @GetMapping("calendar")
+    public ResponseEntity<CalendarResponse> getCalendar(
+            @RequestParam(value = "year", defaultValue = "0") Integer year) {
+        return new ResponseEntity<>(postService.getCalendar(year), HttpStatus.OK);
     }
 }

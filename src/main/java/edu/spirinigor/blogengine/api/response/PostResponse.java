@@ -4,6 +4,7 @@ import edu.spirinigor.blogengine.dto.PostDTO;
 import lombok.Data;
 
 import java.util.List;
+
 @Data
 public class PostResponse {
 

@@ -11,7 +11,7 @@ import java.util.ArrayList;
 
 
 @Component
-public class PostSpecification {
+public class SearchPostSpecification {
 
     public Specification<Post> getSpecification(String query) {
         return (root, criteriaQuery, criteriaBuilder) -> {
