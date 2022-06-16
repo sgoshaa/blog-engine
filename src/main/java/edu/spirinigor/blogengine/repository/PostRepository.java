@@ -37,10 +37,15 @@ public interface PostRepository extends JpaRepository<Post, Integer>, JpaSpecifi
             "AND p.moderationStatus = 'ACCEPTED'  AND p.isActive = 1 AND p.time <= NOW()")
     Page<Post> getPostByDate(Date date,Pageable pageable);
 
+    @Query("select p from Post p " +
+            "inner join TagToPost t2p on p.id = t2p.postId " +
+            "inner join Tag t on t2p.tagId = t.id " +
+            "WHERE t.name LIKE :query and moderation_status = 'ACCEPTED' and p.isActive = 1 and p.time <= NOW()")
+    List<Post> getPostByTagName(String query);
 
     @Query("select p from Post p " +
             "inner join TagToPost t2p on p.id = t2p.postId " +
             "inner join Tag t on t2p.tagId = t.id " +
-            "WHERE t.name LIKE :query and moderation_status = 'ACCEPTED' and p.isActive = 1 and time <= NOW()")
-    List<Post> getPostByTagName(String query);
+            "WHERE t.name = :query and moderation_status = 'ACCEPTED' and p.isActive = 1 and p.time <= NOW()")
+    Page<Post> getPostByTagName(String query,Pageable pageable);
 }

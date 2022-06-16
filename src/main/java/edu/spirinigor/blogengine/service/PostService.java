@@ -53,10 +53,7 @@ public class PostService {
                 postList = postRepository.findAll(pagination.getPage(offset, limit, Sort.by("time").descending()));
                 break;
         }
-        PostResponse postResponse = new PostResponse();
-        postResponse.setCount(postList.getTotalElements());
-        postResponse.setPosts(postMapper.postToListDto(postList));
-        return postResponse;
+        return getPostResponse(postList);
     }
 
     public PostResponse searchPost(Integer offset, Integer limit, String query) {
@@ -68,10 +65,7 @@ public class PostService {
         if (all.getTotalElements() == 0) {
             return getEmptyPostResponse();
         }
-        PostResponse postResponse = new PostResponse();
-        postResponse.setPosts(postMapper.postToListDto(all));
-        postResponse.setCount(all.getTotalElements());
-        return postResponse;
+        return getPostResponse(all);
     }
 
     public CalendarResponse getCalendar(Integer year) {
@@ -99,9 +93,21 @@ public class PostService {
         if (postByDate.getTotalElements() == 0) {
             return getEmptyPostResponse();
         }
+        return getPostResponse(postByDate);
+    }
+
+    public PostResponse getPostByTag(Integer offset, Integer limit, String tag) {
+        Page<Post> postByTagName = postRepository.getPostByTagName(tag, pagination.getPage(offset, limit));
+        if (postByTagName.getTotalElements() == 0) {
+            return getEmptyPostResponse();
+        }
+        return getPostResponse(postByTagName);
+    }
+
+    private PostResponse getPostResponse(Page<Post> posts) {
         PostResponse postResponse = new PostResponse();
-        postResponse.setPosts(postMapper.postToListDto(postByDate));
-        postResponse.setCount(postByDate.getTotalElements());
+        postResponse.setCount(posts.getTotalElements());
+        postResponse.setPosts(postMapper.postToListDto(posts));
         return postResponse;
     }
 
@@ -110,10 +116,5 @@ public class PostService {
         postResponse.setCount(0L);
         postResponse.setPosts(new ArrayList<>());
         return postResponse;
-    }
-
-    public PostResponse getPostByTag(Integer offset, Integer limit, String tag) {
-
-        return new PostResponse();
     }
 }
