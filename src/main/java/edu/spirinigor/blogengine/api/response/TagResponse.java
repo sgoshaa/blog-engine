@@ -11,5 +11,5 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TagResponse {
-    private List<TagDTO> listTag;
+    private List<TagDTO> tags;
 }

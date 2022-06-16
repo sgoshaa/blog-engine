@@ -1,6 +1,7 @@
 package edu.spirinigor.blogengine.model;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import javax.persistence.*;
@@ -21,9 +22,10 @@ public class Tag {
     private String name;
 
 
+    @ToString.Exclude
     @ManyToMany
     @JoinTable(name = "tag2post"
             ,joinColumns = {@JoinColumn(name = "tag_id")}
             ,inverseJoinColumns = {@JoinColumn(name = "post_id")})
-    private List<Tag> tagList;
+    private List<Post> posts;
 }

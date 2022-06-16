@@ -21,7 +21,7 @@ public class ApiTagController {
 
     @GetMapping()
     public ResponseEntity<TagResponse> getListTag(
-            @RequestParam(value = "query", defaultValue = "") String name){
-        return new ResponseEntity<>(tagService.getListTag(), HttpStatus.OK);
+            @RequestParam(value = "query", defaultValue = "") String query){
+        return new ResponseEntity<>(tagService.getListTag(query), HttpStatus.OK);
     }
 }
