@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class TagService {
@@ -24,11 +25,15 @@ public class TagService {
 
     public TagResponse getListTag(String query) {
         List<Post> posts;
-       // query = "Ja";//вписал жестко чтобы проверить работу метода
+//        query = "Ja";//вписал жестко чтобы проверить работу метода
         if (query.isEmpty()) {
             posts = postRepository.findAll();
         } else {
             posts = postRepository.getPostByTagName(query + "%");
+            String finalQuery = query;//удалить если не нужно будет,когда разберусь откуда приходит query
+            List<TagDTO> tags = getResult(posts).stream()
+                    .filter(tagDTO -> tagDTO.getName().contains(finalQuery)).collect(Collectors.toList());
+            return new TagResponse(tags);
         }
         return new TagResponse(getResult(posts));
     }

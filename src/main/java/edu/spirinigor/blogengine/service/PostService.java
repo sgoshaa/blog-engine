@@ -2,6 +2,7 @@ package edu.spirinigor.blogengine.service;
 
 import edu.spirinigor.blogengine.api.response.CalendarResponse;
 import edu.spirinigor.blogengine.api.response.PostResponse;
+import edu.spirinigor.blogengine.dto.PostDTO;
 import edu.spirinigor.blogengine.mapper.PostMapper;
 import edu.spirinigor.blogengine.model.Post;
 import edu.spirinigor.blogengine.repository.PostRepository;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -102,6 +104,11 @@ public class PostService {
             return getEmptyPostResponse();
         }
         return getPostResponse(postByTagName);
+    }
+
+    public PostDTO getPostById(Integer id) {
+        Post byId = postRepository.findById(id).get();
+        return postMapper.postToPostDTO(byId);
     }
 
     private PostResponse getPostResponse(Page<Post> posts) {
