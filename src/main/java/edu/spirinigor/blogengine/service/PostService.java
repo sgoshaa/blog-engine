@@ -1,8 +1,8 @@
 package edu.spirinigor.blogengine.service;
 
 import edu.spirinigor.blogengine.api.response.CalendarResponse;
+import edu.spirinigor.blogengine.api.response.ListPostResponse;
 import edu.spirinigor.blogengine.api.response.PostResponse;
-import edu.spirinigor.blogengine.dto.PostDTO;
 import edu.spirinigor.blogengine.mapper.PostMapper;
 import edu.spirinigor.blogengine.model.Post;
 import edu.spirinigor.blogengine.repository.PostRepository;
@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -38,7 +37,7 @@ public class PostService {
         this.postSpecification = postSpecification;
     }
 
-    public PostResponse getListPost(Integer offset, Integer limit, String mode) {
+    public ListPostResponse getListPost(Integer offset, Integer limit, String mode) {
         Page<Post> postList;
         switch (mode) {
             case "popular":
@@ -58,7 +57,7 @@ public class PostService {
         return getPostResponse(postList);
     }
 
-    public PostResponse searchPost(Integer offset, Integer limit, String query) {
+    public ListPostResponse searchPost(Integer offset, Integer limit, String query) {
         if (query.isEmpty()) {
             return getListPost(offset, limit, "recent");
         }
@@ -90,7 +89,7 @@ public class PostService {
         return calendarResponse;
     }
 
-    public PostResponse getPostByDate(Integer offset, Integer limit, Date date) {
+    public ListPostResponse getPostByDate(Integer offset, Integer limit, Date date) {
         Page<Post> postByDate = postRepository.getPostByDate(date, pagination.getPage(offset, limit));
         if (postByDate.getTotalElements() == 0) {
             return getEmptyPostResponse();
@@ -98,7 +97,7 @@ public class PostService {
         return getPostResponse(postByDate);
     }
 
-    public PostResponse getPostByTag(Integer offset, Integer limit, String tag) {
+    public ListPostResponse getPostByTag(Integer offset, Integer limit, String tag) {
         Page<Post> postByTagName = postRepository.getPostByTagName(tag, pagination.getPage(offset, limit));
         if (postByTagName.getTotalElements() == 0) {
             return getEmptyPostResponse();
@@ -106,22 +105,22 @@ public class PostService {
         return getPostResponse(postByTagName);
     }
 
-    public PostDTO getPostById(Integer id) {
-        Post byId = postRepository.findById(id).get();
-        return postMapper.postToPostDTO(byId);
+    public PostResponse getPostById(Integer id) {
+        Post byId = postRepository.getPostById(id);//доделать проверку если пришел пустой рузультат
+        return postMapper.postToPostResponse(byId);
     }
 
-    private PostResponse getPostResponse(Page<Post> posts) {
-        PostResponse postResponse = new PostResponse();
-        postResponse.setCount(posts.getTotalElements());
-        postResponse.setPosts(postMapper.postToListDto(posts));
-        return postResponse;
+    private ListPostResponse getPostResponse(Page<Post> posts) {
+        ListPostResponse listPostResponse = new ListPostResponse();
+        listPostResponse.setCount(posts.getTotalElements());
+        listPostResponse.setPosts(postMapper.postToListDto(posts));
+        return listPostResponse;
     }
 
-    private PostResponse getEmptyPostResponse() {
-        PostResponse postResponse = new PostResponse();
-        postResponse.setCount(0L);
-        postResponse.setPosts(new ArrayList<>());
-        return postResponse;
+    private ListPostResponse getEmptyPostResponse() {
+        ListPostResponse listPostResponse = new ListPostResponse();
+        listPostResponse.setCount(0L);
+        listPostResponse.setPosts(new ArrayList<>());
+        return listPostResponse;
     }
 }

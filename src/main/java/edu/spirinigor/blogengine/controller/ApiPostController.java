@@ -1,6 +1,7 @@
 package edu.spirinigor.blogengine.controller;
 
 import edu.spirinigor.blogengine.api.response.CalendarResponse;
+import edu.spirinigor.blogengine.api.response.ListPostResponse;
 import edu.spirinigor.blogengine.api.response.PostResponse;
 import edu.spirinigor.blogengine.dto.PostDTO;
 import edu.spirinigor.blogengine.service.PostService;
@@ -25,7 +26,7 @@ public class ApiPostController {
     }
 
     @GetMapping("post")
-    public ResponseEntity<PostResponse> getListPost(
+    public ResponseEntity<ListPostResponse> getListPost(
             @RequestParam(value = "offset", defaultValue = "0") Integer offset,
             @RequestParam(value = "limit", defaultValue = "10") Integer limit,
             @RequestParam(value = "mode", defaultValue = "recent") String mode) {
@@ -33,7 +34,7 @@ public class ApiPostController {
     }
 
     @GetMapping("post/search")
-    public ResponseEntity<PostResponse> searchPost(
+    public ResponseEntity<ListPostResponse> searchPost(
             @RequestParam(value = "offset", defaultValue = "0") Integer offset,
             @RequestParam(value = "limit", defaultValue = "10") Integer limit,
             @RequestParam(value = "query", defaultValue = "") String query) {
@@ -47,7 +48,7 @@ public class ApiPostController {
     }
 
     @GetMapping("post/byDate")
-    public ResponseEntity<PostResponse> getPostByDate(
+    public ResponseEntity<ListPostResponse> getPostByDate(
             @RequestParam(value = "offset", defaultValue = "0") Integer offset,
             @RequestParam(value = "limit", defaultValue = "10") Integer limit,
             @RequestParam(value = "date", defaultValue = "") String date) {
@@ -55,7 +56,7 @@ public class ApiPostController {
     }
 
     @GetMapping("post/byTag")
-    public ResponseEntity<PostResponse> getPostByTag(
+    public ResponseEntity<ListPostResponse> getPostByTag(
             @RequestParam(value = "offset", defaultValue = "0") Integer offset,
             @RequestParam(value = "limit", defaultValue = "10") Integer limit,
             @RequestParam(value = "tag", defaultValue = "") String tag) {
@@ -63,7 +64,7 @@ public class ApiPostController {
     }
 
     @GetMapping("post/{id}")
-    public ResponseEntity<PostDTO>getPostById(@PathVariable Integer id){
+    public ResponseEntity<PostResponse>getPostById(@PathVariable Integer id){
         return new ResponseEntity<>(postService.getPostById(id),HttpStatus.OK);
     }
 }

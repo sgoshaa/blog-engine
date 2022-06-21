@@ -3,6 +3,7 @@ package edu.spirinigor.blogengine.model;
 import edu.spirinigor.blogengine.model.enums.ModerationStatus;
 import lombok.Data;
 import lombok.ToString;
+import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;

@@ -1,5 +1,6 @@
 package edu.spirinigor.blogengine.mapper;
 
+import edu.spirinigor.blogengine.api.response.PostResponse;
 import edu.spirinigor.blogengine.dto.PostDTO;
 import edu.spirinigor.blogengine.mapper.converter.DateConverter;
 import edu.spirinigor.blogengine.model.Post;
@@ -9,7 +10,7 @@ import org.springframework.data.domain.Page;
 
 import java.util.List;
 
-@Mapper(uses = DateConverter.class)
+@Mapper(uses = {DateConverter.class, TagMapper.class, CommentMapper.class})
 public interface PostMapper {
 
     @Mapping(target = "id", source = "post.id")
@@ -24,4 +25,7 @@ public interface PostMapper {
     PostDTO postToPostDTO(Post post);
 
     List<PostDTO> postToListDto(Page<Post> posts);
+
+    @Mapping(target = "comments", source = "postComments")
+    PostResponse postToPostResponse(Post post);
 }

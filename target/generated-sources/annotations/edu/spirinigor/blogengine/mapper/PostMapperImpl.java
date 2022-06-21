@@ -1,23 +1,29 @@
 package edu.spirinigor.blogengine.mapper;
 
+import edu.spirinigor.blogengine.api.response.PostResponse;
+import edu.spirinigor.blogengine.dto.CommentDto;
 import edu.spirinigor.blogengine.dto.PostDTO;
 import edu.spirinigor.blogengine.dto.UserDTO;
 import edu.spirinigor.blogengine.mapper.converter.DateConverter;
 import edu.spirinigor.blogengine.model.Post;
+import edu.spirinigor.blogengine.model.PostComment;
 import edu.spirinigor.blogengine.model.User;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.processing.Generated;
+import org.mapstruct.factory.Mappers;
 import org.springframework.data.domain.Page;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2022-06-17T10:04:09+0500",
+    date = "2022-06-21T18:07:06+0500",
     comments = "version: 1.4.2.Final, compiler: javac, environment: Java 11.0.14.1 (Amazon.com Inc.)"
 )
 public class PostMapperImpl implements PostMapper {
 
     private final DateConverter dateConverter = new DateConverter();
+    private final TagMapper tagMapper = Mappers.getMapper( TagMapper.class );
+    private final CommentMapper commentMapper = Mappers.getMapper( CommentMapper.class );
 
     @Override
     public PostDTO postToPostDTO(Post post) {
@@ -55,6 +61,25 @@ public class PostMapperImpl implements PostMapper {
         return list;
     }
 
+    @Override
+    public PostResponse postToPostResponse(Post post) {
+        if ( post == null ) {
+            return null;
+        }
+
+        PostResponse postResponse = new PostResponse();
+
+        postResponse.setComments( postCommentListToCommentDtoList( post.getPostComments() ) );
+        postResponse.setId( post.getId() );
+        postResponse.setUser( userToUserDTO( post.getUser() ) );
+        postResponse.setTitle( post.getTitle() );
+        postResponse.setText( post.getText() );
+        postResponse.setViewCount( post.getViewCount() );
+        postResponse.setTags( tagMapper.toListTagName( post.getTags() ) );
+
+        return postResponse;
+    }
+
     protected UserDTO userToUserDTO(User user) {
         if ( user == null ) {
             return null;
@@ -66,5 +91,18 @@ public class PostMapperImpl implements PostMapper {
         userDTO.setName( user.getName() );
 
         return userDTO;
+    }
+
+    protected List<CommentDto> postCommentListToCommentDtoList(List<PostComment> list) {
+        if ( list == null ) {
+            return null;
+        }
+
+        List<CommentDto> list1 = new ArrayList<CommentDto>( list.size() );
+        for ( PostComment postComment : list ) {
+            list1.add( commentMapper.toCommentDto( postComment ) );
+        }
+
+        return list1;
     }
 }
