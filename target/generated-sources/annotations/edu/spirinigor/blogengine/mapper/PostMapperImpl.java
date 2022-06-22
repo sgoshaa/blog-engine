@@ -16,7 +16,7 @@ import org.springframework.data.domain.Page;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2022-06-21T18:07:06+0500",
+    date = "2022-06-22T18:17:22+0500",
     comments = "version: 1.4.2.Final, compiler: javac, environment: Java 11.0.14.1 (Amazon.com Inc.)"
 )
 public class PostMapperImpl implements PostMapper {
@@ -70,12 +70,15 @@ public class PostMapperImpl implements PostMapper {
         PostResponse postResponse = new PostResponse();
 
         postResponse.setComments( postCommentListToCommentDtoList( post.getPostComments() ) );
+        postResponse.setTimeStamp( dateConverter.convertDate( post.getTime() ) );
         postResponse.setId( post.getId() );
         postResponse.setUser( userToUserDTO( post.getUser() ) );
         postResponse.setTitle( post.getTitle() );
         postResponse.setText( post.getText() );
         postResponse.setViewCount( post.getViewCount() );
         postResponse.setTags( tagMapper.toListTagName( post.getTags() ) );
+
+        postResponse.setActive( post.getIsActive() == 1 );
 
         return postResponse;
     }

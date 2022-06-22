@@ -27,5 +27,7 @@ public interface PostMapper {
     List<PostDTO> postToListDto(Page<Post> posts);
 
     @Mapping(target = "comments", source = "postComments")
+    @Mapping(target = "active",expression = "java(post.getIsActive() == 1)")
+    @Mapping(target = "timeStamp",source = "time",qualifiedByName = "convertDateToLong")
     PostResponse postToPostResponse(Post post);
 }

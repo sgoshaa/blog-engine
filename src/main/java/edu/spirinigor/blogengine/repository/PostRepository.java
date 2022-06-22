@@ -50,6 +50,6 @@ public interface PostRepository extends JpaRepository<Post, Integer>, JpaSpecifi
     Page<Post> getPostByTagName(String query,Pageable pageable);
 
     @Query("select p from Post p " +
-            "left join fetch p.postComments where p.id = :id and moderation_status = 'ACCEPTED' and p.isActive = 1 and p.time <= NOW()")
+            "left join fetch p.postComments where p.id = :id and moderation_status = 'ACCEPTED' and p.time <= NOW()")
     Post getPostById(Integer id);
 }

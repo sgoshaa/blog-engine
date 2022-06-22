@@ -60,11 +60,15 @@ public class ApiPostController {
             @RequestParam(value = "offset", defaultValue = "0") Integer offset,
             @RequestParam(value = "limit", defaultValue = "10") Integer limit,
             @RequestParam(value = "tag", defaultValue = "") String tag) {
-        return new ResponseEntity<>(postService.getPostByTag(offset,limit,tag), HttpStatus.OK);
+        return new ResponseEntity<>(postService.getPostByTag(offset, limit, tag), HttpStatus.OK);
     }
 
     @GetMapping("post/{id}")
-    public ResponseEntity<PostResponse>getPostById(@PathVariable Integer id){
-        return new ResponseEntity<>(postService.getPostById(id),HttpStatus.OK);
+    public ResponseEntity<PostResponse> getPostById(@PathVariable Integer id) {
+        PostResponse postById = postService.getPostById(id);
+        if (postById == null) {
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(postById, HttpStatus.OK);
     }
 }

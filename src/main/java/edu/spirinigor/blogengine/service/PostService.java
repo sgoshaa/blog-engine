@@ -106,8 +106,20 @@ public class PostService {
     }
 
     public PostResponse getPostById(Integer id) {
-        Post byId = postRepository.getPostById(id);//доделать проверку если пришел пустой рузультат
-        return postMapper.postToPostResponse(byId);
+        Post byId = postRepository.getPostById(id);
+        if (byId == null) {
+            return null;
+        }
+        PostResponse postResponse = postMapper.postToPostResponse(byId);
+        updateViewCount(byId);
+        return postResponse;
+    }
+
+    //todo сюда еще нужна логика проверки какой юзер зашел чтобы
+    // счетчик не увеличивался когда заходит автор и модератор
+    private void updateViewCount(Post byId) {
+        byId.setViewCount(byId.getViewCount() + 1);
+        postRepository.save(byId);
     }
 
     private ListPostResponse getPostResponse(Page<Post> posts) {
