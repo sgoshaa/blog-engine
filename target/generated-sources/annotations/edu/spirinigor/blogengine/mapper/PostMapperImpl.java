@@ -16,7 +16,7 @@ import org.springframework.data.domain.Page;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2022-06-22T18:17:22+0500",
+    date = "2022-06-23T18:01:40+0500",
     comments = "version: 1.4.2.Final, compiler: javac, environment: Java 11.0.14.1 (Amazon.com Inc.)"
 )
 public class PostMapperImpl implements PostMapper {

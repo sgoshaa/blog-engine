@@ -22,4 +22,9 @@ public class ApiAuthController {
     public ResponseEntity<NoAuthCheckResponse> getAuthCheck(){
         return new ResponseEntity<>(authService.authCheck(), HttpStatus.OK);
     }
+
+    @GetMapping("captcha")
+    public void getCaptcha(){
+        authService.getCaptcha();
+    }
 }
