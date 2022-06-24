@@ -118,6 +118,9 @@ public class PostService {
     //todo сюда еще нужна логика проверки какой юзер зашел чтобы
     // счетчик не увеличивался когда заходит автор и модератор
     private void updateViewCount(Post byId) {
+        if (byId.getModerator().getIsModerator() == 0) {
+            return;
+        }
         byId.setViewCount(byId.getViewCount() + 1);
         postRepository.save(byId);
     }

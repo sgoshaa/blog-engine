@@ -1,5 +1,6 @@
 package edu.spirinigor.blogengine.controller;
 
+import edu.spirinigor.blogengine.api.response.CaptchaResponse;
 import edu.spirinigor.blogengine.api.response.NoAuthCheckResponse;
 import edu.spirinigor.blogengine.service.AuthService;
 import org.aspectj.weaver.ResolvedPointcutDefinition;
@@ -24,7 +25,7 @@ public class ApiAuthController {
     }
 
     @GetMapping("captcha")
-    public void getCaptcha(){
-        authService.getCaptcha();
+    public CaptchaResponse getCaptcha(){
+        return authService.getCaptcha();
     }
 }
