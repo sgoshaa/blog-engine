@@ -2,6 +2,7 @@ package edu.spirinigor.blogengine.controller;
 
 import edu.spirinigor.blogengine.api.request.CreateUserRequest;
 import edu.spirinigor.blogengine.api.response.CaptchaResponse;
+import edu.spirinigor.blogengine.api.response.CreateUserResponse;
 import edu.spirinigor.blogengine.api.response.NoAuthCheckResponse;
 import edu.spirinigor.blogengine.service.AuthService;
 import org.springframework.http.HttpStatus;
@@ -33,7 +34,7 @@ public class ApiAuthController {
     }
 
     @PostMapping("register")
-    public void createUser(@RequestBody CreateUserRequest userDto){
-        authService.createUser(userDto);
+    public CreateUserResponse createUser(@RequestBody CreateUserRequest userDto){
+       return authService.createUser(userDto);
     }
 }

@@ -4,11 +4,11 @@ import com.github.cage.Cage;
 import com.github.cage.YCage;
 import edu.spirinigor.blogengine.api.request.CreateUserRequest;
 import edu.spirinigor.blogengine.api.response.CaptchaResponse;
-import edu.spirinigor.blogengine.api.response.ErrorCreateUserResponse;
+import edu.spirinigor.blogengine.api.response.CreateUserResponse;
 import edu.spirinigor.blogengine.api.response.NoAuthCheckResponse;
 import edu.spirinigor.blogengine.dto.ErrorsCreatingUserDto;
+import edu.spirinigor.blogengine.mapper.UserMapper;
 import edu.spirinigor.blogengine.model.CaptchaCode;
-import edu.spirinigor.blogengine.model.User;
 import edu.spirinigor.blogengine.repository.CaptchaCodeRepository;
 import edu.spirinigor.blogengine.repository.UserRepository;
 import org.apache.commons.io.FileUtils;
@@ -27,20 +27,21 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.Base64;
-import java.util.Optional;
 
 @Service
 public class AuthService {
 
     public static final String NAME = "captcha.png";
-    private static final int TARGET_WIDTH = 100;
-    private static final int TARGET_HEIGHT = 35;
+    private static final int TARGET_WIDTH = 300;
+    private static final int TARGET_HEIGHT = 100;
     private final CaptchaCodeRepository captchaCodeRepository;
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
-    public AuthService(CaptchaCodeRepository captchaCodeRepository, UserRepository userRepository) {
+    public AuthService(CaptchaCodeRepository captchaCodeRepository, UserRepository userRepository, UserMapper userMapper) {
         this.captchaCodeRepository = captchaCodeRepository;
         this.userRepository = userRepository;
+        this.userMapper = userMapper;
     }
 
     public NoAuthCheckResponse authCheck() {
@@ -49,7 +50,6 @@ public class AuthService {
         return noAuthCheckResponse;
     }
 
-    @Transactional
     public CaptchaResponse getCaptcha() {
         Cage cage = new YCage();
         String result = "data:image/png;base64, ";
@@ -76,32 +76,52 @@ public class AuthService {
         return createCaptchaResponse(result, secretCode);
     }
 
-    public void createUser(CreateUserRequest userDto) {
-        ErrorsCreatingUserDto errorsCreatingUserDto = checkUser(userDto);
-        if (errorsCreatingUserDto != null){
-
+    @Transactional
+    public CreateUserResponse createUser(CreateUserRequest userDto) {
+        CreateUserResponse createUserResponse = new CreateUserResponse();
+        if (isCorrectEmail(userDto.getEmail())
+                && isCorrectCaptcha(userDto.getCaptcha(), userDto.getCaptchaSecret())
+                && isCorrectName(userDto.getName())
+                && isCorrectPassword(userDto.getPassword())
+        ) {
+            createUserResponse.setResult(true);
+            userRepository.save(userMapper.dtoToUser(userDto));
+            return createUserResponse;
         }
+        createUserResponse.setResult(false);
+        createUserResponse.setErrorsCreatingUserDto(checkUser(userDto));
+        return createUserResponse;
+    }
 
+    private Boolean isCorrectEmail(String email) {
+        return userRepository.findByEmail(email) == null;
+    }
+
+    private Boolean isCorrectName(String name) {
+        return userRepository.findByName(name) == null;
+    }
+
+    private Boolean isCorrectCaptcha(String captcha, String secretCode) {
+        CaptchaCode bySecretCode = captchaCodeRepository.findBySecretCode(secretCode).get();
+        return bySecretCode.getCode().equals(captcha);
+    }
+
+    private Boolean isCorrectPassword(String password) {
+        return password.length() >= 6;
     }
 
     private ErrorsCreatingUserDto checkUser(CreateUserRequest userDto) {
-        User byEmail = userRepository.findByEmail(userDto.getEmail());
         ErrorsCreatingUserDto errorsCreatingUserDto = new ErrorsCreatingUserDto();
-        if (byEmail != null) {
+        if (!isCorrectEmail(userDto.getEmail())) {
             errorsCreatingUserDto.setEmail("Этот e-mail уже зарегистрирован");
         }
-        User byName = userRepository.findByName(userDto.getName());
-        if (byName != null) {
+        if (!isCorrectName(userDto.getName())) {
             errorsCreatingUserDto.setName("Имя указано неверно,такое уже существует");
         }
-
-        CaptchaCode bySecretCode = captchaCodeRepository.findBySecretCode(userDto.getCaptchaSecret()).get();
-
-        if (!bySecretCode.getCode().equals(userDto.getCaptcha())) {
+        if (!isCorrectCaptcha(userDto.getCaptcha(), userDto.getCaptchaSecret())) {
             errorsCreatingUserDto.setCaptcha("Код с картинки введён неверно");
         }
-
-        if (userDto.getPassword().length() < 6) {
+        if (!isCorrectPassword(userDto.getPassword())) {
             errorsCreatingUserDto.setPassword("Пароль короче 6-ти символов");
         }
         return errorsCreatingUserDto;
@@ -113,7 +133,6 @@ public class AuthService {
         captchaResponse.setSecret(secretCode);
         return captchaResponse;
     }
-
 
     private void saveToDatabase(String code, String secretCode) {
         CaptchaCode captchaCode = new CaptchaCode();
