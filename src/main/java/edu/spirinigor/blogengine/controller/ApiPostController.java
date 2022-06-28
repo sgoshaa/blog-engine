@@ -7,6 +7,7 @@ import edu.spirinigor.blogengine.dto.PostDTO;
 import edu.spirinigor.blogengine.service.PostService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,6 +27,7 @@ public class ApiPostController {
     }
 
     @GetMapping("post")
+    @PreAuthorize("hasAuthority('user:write')")
     public ResponseEntity<ListPostResponse> getListPost(
             @RequestParam(value = "offset", defaultValue = "0") Integer offset,
             @RequestParam(value = "limit", defaultValue = "10") Integer limit,
@@ -34,6 +36,7 @@ public class ApiPostController {
     }
 
     @GetMapping("post/search")
+    @PreAuthorize("hasAuthority('user:moderate')")
     public ResponseEntity<ListPostResponse> searchPost(
             @RequestParam(value = "offset", defaultValue = "0") Integer offset,
             @RequestParam(value = "limit", defaultValue = "10") Integer limit,

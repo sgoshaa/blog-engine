@@ -3,9 +3,12 @@ package edu.spirinigor.blogengine.service;
 import com.github.cage.Cage;
 import com.github.cage.YCage;
 import edu.spirinigor.blogengine.api.request.CreateUserRequest;
+import edu.spirinigor.blogengine.api.request.LoginRequest;
 import edu.spirinigor.blogengine.api.response.CaptchaResponse;
 import edu.spirinigor.blogengine.api.response.CreateUserResponse;
+import edu.spirinigor.blogengine.api.response.LoginResponse;
 import edu.spirinigor.blogengine.api.response.NoAuthCheckResponse;
+import edu.spirinigor.blogengine.api.response.UserLoginResponse;
 import edu.spirinigor.blogengine.dto.ErrorsCreatingUserDto;
 import edu.spirinigor.blogengine.mapper.UserMapper;
 import edu.spirinigor.blogengine.model.CaptchaCode;
@@ -13,6 +16,12 @@ import edu.spirinigor.blogengine.repository.CaptchaCodeRepository;
 import edu.spirinigor.blogengine.repository.UserRepository;
 import org.apache.commons.io.FileUtils;
 import org.imgscalr.Scalr;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +34,7 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.Base64;
 
@@ -37,17 +47,36 @@ public class AuthService {
     private final CaptchaCodeRepository captchaCodeRepository;
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final AuthenticationManager authenticationManager;
 
-    public AuthService(CaptchaCodeRepository captchaCodeRepository, UserRepository userRepository, UserMapper userMapper) {
+    public AuthService(CaptchaCodeRepository captchaCodeRepository, UserRepository userRepository,
+                       UserMapper userMapper, AuthenticationManager authenticationManager) {
         this.captchaCodeRepository = captchaCodeRepository;
         this.userRepository = userRepository;
         this.userMapper = userMapper;
+        this.authenticationManager = authenticationManager;
     }
 
-    public NoAuthCheckResponse authCheck() {
-        NoAuthCheckResponse noAuthCheckResponse = new NoAuthCheckResponse();
-        noAuthCheckResponse.setResult(false);
-        return noAuthCheckResponse;
+    public LoginResponse login(LoginRequest loginRequest) {
+        Authentication authenticate = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+
+        SecurityContextHolder.getContext().setAuthentication(authenticate);
+        User user = (User) authenticate.getPrincipal();
+
+        return getLoginResponse(user.getUsername());
+    }
+
+    public LoginResponse authCheck(Principal principal) {
+        if (principal == null) {
+            LoginResponse loginResponse = new LoginResponse();
+            loginResponse.setResult(false);
+            return loginResponse;
+        }
+        return getLoginResponse(principal.getName());
+//        NoAuthCheckResponse noAuthCheckResponse = new NoAuthCheckResponse();
+//        noAuthCheckResponse.setResult(false);
+//        return noAuthCheckResponse;
     }
 
     public CaptchaResponse getCaptcha() {
@@ -91,6 +120,24 @@ public class AuthService {
         createUserResponse.setResult(false);
         createUserResponse.setErrorsCreatingUserDto(checkUser(userDto));
         return createUserResponse;
+    }
+
+    private LoginResponse getLoginResponse(String email) {
+        edu.spirinigor.blogengine.model.User currentUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("user not found" + email));
+
+        UserLoginResponse userLoginResponse = new UserLoginResponse();
+        userLoginResponse.setId(currentUser.getId());
+        userLoginResponse.setEmail(currentUser.getEmail());
+        userLoginResponse.setModeration(currentUser.getIsModerator() == 1);
+        userLoginResponse.setName(currentUser.getName());
+        userLoginResponse.setSettings(true);
+        userLoginResponse.setModerationCount(0);
+
+        LoginResponse loginResponse = new LoginResponse();
+        loginResponse.setResult(true);
+        loginResponse.setUserLoginResponse(userLoginResponse);
+        return loginResponse;
     }
 
     private Boolean isCorrectEmail(String email) {
