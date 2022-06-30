@@ -59,4 +59,8 @@ public interface PostRepository extends JpaRepository<Post, Integer>, JpaSpecifi
 
     @Query("select p from Post p where p.user.id = :userId and p.isActive = 1 and p.moderationStatus = :status")
     Page<Post> findAllMyByStatus(Integer userId, ModerationStatus status, Pageable pageable);
+
+    @Query("select p from Post p where p.moderator.id = :moderatorId and p.isActive = 1 " +
+            "and p.moderationStatus = :status")
+    Page<Post> findAllForModeration(Integer moderatorId, ModerationStatus status, Pageable pageable);
 }

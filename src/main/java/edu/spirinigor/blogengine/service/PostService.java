@@ -145,10 +145,35 @@ public class PostService {
         return getListPostResponse(allMyPost);
     }
 
-    //todo сюда еще нужна логика проверки какой юзер зашел чтобы
-    // счетчик не увеличивался когда заходит автор и модератор
+    public ListPostResponse getPostForModeration(Integer offset, Integer limit, String status) {
+        Integer idCurrentUser = UserUtils.getIdCurrentUser();
+        Page<Post> allPost = null;
+        switch (status) {
+            case "new":
+                allPost = postRepository.findAllForModeration(idCurrentUser
+                        , ModerationStatus.NEW, pagination.getPage(offset, limit));
+                break;
+            case "declined":
+                allPost = postRepository.findAllForModeration(idCurrentUser
+                        , ModerationStatus.DECLINED, pagination.getPage(offset, limit));
+                break;
+            case "accepted":
+                allPost = postRepository.findAllForModeration(idCurrentUser
+                        , ModerationStatus.ACCEPTED, pagination.getPage(offset, limit));
+                break;
+        }
+
+        assert allPost != null;
+
+        if (allPost.isEmpty()){
+            return getEmptyPostResponse();
+        }
+        return getListPostResponse(allPost);
+    }
+
     private void updateViewCount(Post byId) {
-        if (byId.getModerator().getIsModerator() == 0) {
+        Integer idCurrentUser = UserUtils.getIdCurrentUser();
+        if (byId.getModerator().getId() == idCurrentUser || byId.getUser().getId() == idCurrentUser ) {
             return;
         }
         byId.setViewCount(byId.getViewCount() + 1);

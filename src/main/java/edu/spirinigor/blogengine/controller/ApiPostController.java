@@ -81,4 +81,11 @@ public class ApiPostController {
                                                       @RequestParam(value = "status", defaultValue = "") String status){
         return ResponseEntity.ok(postService.getMyPost(offset,limit,status));
     }
+
+    @GetMapping("post/moderation")
+    public ResponseEntity<ListPostResponse>getPostForModeration(@RequestParam(value = "offset", defaultValue = "0") Integer offset,
+                                                                @RequestParam(value = "limit", defaultValue = "10") Integer limit,
+                                                                @RequestParam(value = "status", defaultValue = "") String status){
+        return ResponseEntity.ok(postService.getPostForModeration(offset,limit,status));
+    }
 }
