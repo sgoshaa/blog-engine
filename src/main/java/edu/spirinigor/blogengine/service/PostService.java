@@ -5,9 +5,11 @@ import edu.spirinigor.blogengine.api.response.ListPostResponse;
 import edu.spirinigor.blogengine.api.response.PostResponse;
 import edu.spirinigor.blogengine.mapper.PostMapper;
 import edu.spirinigor.blogengine.model.Post;
+import edu.spirinigor.blogengine.model.enums.ModerationStatus;
 import edu.spirinigor.blogengine.repository.PostRepository;
 import edu.spirinigor.blogengine.repository.specification.SearchPostSpecification;
 import edu.spirinigor.blogengine.util.Pagination;
+import edu.spirinigor.blogengine.util.UserUtils;
 import org.mapstruct.factory.Mappers;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
@@ -54,7 +56,7 @@ public class PostService {
                 postList = postRepository.findAll(pagination.getPage(offset, limit, Sort.by("time").descending()));
                 break;
         }
-        return getPostResponse(postList);
+        return getListPostResponse(postList);
     }
 
     public ListPostResponse searchPost(Integer offset, Integer limit, String query) {
@@ -66,7 +68,7 @@ public class PostService {
         if (all.getTotalElements() == 0) {
             return getEmptyPostResponse();
         }
-        return getPostResponse(all);
+        return getListPostResponse(all);
     }
 
     public CalendarResponse getCalendar(Integer year) {
@@ -94,7 +96,7 @@ public class PostService {
         if (postByDate.getTotalElements() == 0) {
             return getEmptyPostResponse();
         }
-        return getPostResponse(postByDate);
+        return getListPostResponse(postByDate);
     }
 
     public ListPostResponse getPostByTag(Integer offset, Integer limit, String tag) {
@@ -102,7 +104,7 @@ public class PostService {
         if (postByTagName.getTotalElements() == 0) {
             return getEmptyPostResponse();
         }
-        return getPostResponse(postByTagName);
+        return getListPostResponse(postByTagName);
     }
 
     public PostResponse getPostById(Integer id) {
@@ -115,6 +117,34 @@ public class PostService {
         return postResponse;
     }
 
+    public ListPostResponse getMyPost(Integer offset, Integer limit, String status) {
+        Integer idCurrentUser = UserUtils.getIdCurrentUser();
+        Page<Post> allMyPost = null;
+        switch (status) {
+            case "inactive":
+                allMyPost = postRepository.findAllMyByStatusInactive(idCurrentUser, pagination.getPage(offset, limit));
+                break;
+            case "pending":
+                allMyPost = postRepository.findAllMyByStatus(idCurrentUser
+                        , ModerationStatus.NEW, pagination.getPage(offset, limit));
+                break;
+            case "declined":
+                allMyPost = postRepository.findAllMyByStatus(idCurrentUser
+                        , ModerationStatus.DECLINED, pagination.getPage(offset, limit));
+                break;
+            case "published":
+                allMyPost = postRepository.findAllMyByStatus(idCurrentUser
+                        , ModerationStatus.ACCEPTED, pagination.getPage(offset, limit));
+                break;
+        }
+
+        if (allMyPost.getTotalElements() == 0) {
+            return getEmptyPostResponse();
+        }
+
+        return getListPostResponse(allMyPost);
+    }
+
     //todo сюда еще нужна логика проверки какой юзер зашел чтобы
     // счетчик не увеличивался когда заходит автор и модератор
     private void updateViewCount(Post byId) {
@@ -125,7 +155,7 @@ public class PostService {
         postRepository.save(byId);
     }
 
-    private ListPostResponse getPostResponse(Page<Post> posts) {
+    private ListPostResponse getListPostResponse(Page<Post> posts) {
         ListPostResponse listPostResponse = new ListPostResponse();
         listPostResponse.setCount(posts.getTotalElements());
         listPostResponse.setPosts(postMapper.postToListDto(posts));

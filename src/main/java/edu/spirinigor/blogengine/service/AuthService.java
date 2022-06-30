@@ -7,7 +7,7 @@ import edu.spirinigor.blogengine.api.request.LoginRequest;
 import edu.spirinigor.blogengine.api.response.CaptchaResponse;
 import edu.spirinigor.blogengine.api.response.CreateUserResponse;
 import edu.spirinigor.blogengine.api.response.LoginResponse;
-import edu.spirinigor.blogengine.api.response.NoAuthCheckResponse;
+import edu.spirinigor.blogengine.api.response.LogoutResponse;
 import edu.spirinigor.blogengine.api.response.UserLoginResponse;
 import edu.spirinigor.blogengine.dto.ErrorsCreatingUserDto;
 import edu.spirinigor.blogengine.mapper.UserMapper;
@@ -22,6 +22,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +38,8 @@ import java.nio.file.Path;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class AuthService {
@@ -48,13 +51,15 @@ public class AuthService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final AuthenticationManager authenticationManager;
+    private final PasswordEncoder passwordEncoder;
 
     public AuthService(CaptchaCodeRepository captchaCodeRepository, UserRepository userRepository,
-                       UserMapper userMapper, AuthenticationManager authenticationManager) {
+                       UserMapper userMapper, AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder) {
         this.captchaCodeRepository = captchaCodeRepository;
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.authenticationManager = authenticationManager;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public LoginResponse login(LoginRequest loginRequest) {
@@ -74,9 +79,11 @@ public class AuthService {
             return loginResponse;
         }
         return getLoginResponse(principal.getName());
-//        NoAuthCheckResponse noAuthCheckResponse = new NoAuthCheckResponse();
-//        noAuthCheckResponse.setResult(false);
-//        return noAuthCheckResponse;
+    }
+
+    public LogoutResponse logout() {
+        SecurityContextHolder.clearContext();
+        return new LogoutResponse();
     }
 
     public CaptchaResponse getCaptcha() {
@@ -114,7 +121,9 @@ public class AuthService {
                 && isCorrectPassword(userDto.getPassword())
         ) {
             createUserResponse.setResult(true);
-            userRepository.save(userMapper.dtoToUser(userDto));
+            edu.spirinigor.blogengine.model.User user = userMapper.dtoToUser(userDto);
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            userRepository.save(user);
             return createUserResponse;
         }
         createUserResponse.setResult(false);
@@ -141,11 +150,13 @@ public class AuthService {
     }
 
     private Boolean isCorrectEmail(String email) {
-        return userRepository.findByEmail(email) == null;
+        return userRepository.findByEmail(email).orElse(null) == null;
     }
 
     private Boolean isCorrectName(String name) {
-        return userRepository.findByName(name) == null;
+        Pattern pattern = Pattern.compile("[^!@#$%^&*()_]+");
+        Matcher matcher = pattern.matcher(name);
+        return matcher.matches();
     }
 
     private Boolean isCorrectCaptcha(String captcha, String secretCode) {
@@ -163,7 +174,7 @@ public class AuthService {
             errorsCreatingUserDto.setEmail("Этот e-mail уже зарегистрирован");
         }
         if (!isCorrectName(userDto.getName())) {
-            errorsCreatingUserDto.setName("Имя указано неверно,такое уже существует");
+            errorsCreatingUserDto.setName("Имя указано неверно, использованы спец.символы: ! @ # $ % ^ & * () _");
         }
         if (!isCorrectCaptcha(userDto.getCaptcha(), userDto.getCaptchaSecret())) {
             errorsCreatingUserDto.setCaptcha("Код с картинки введён неверно");

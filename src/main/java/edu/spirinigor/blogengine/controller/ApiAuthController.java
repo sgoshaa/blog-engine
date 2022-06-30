@@ -5,6 +5,7 @@ import edu.spirinigor.blogengine.api.request.LoginRequest;
 import edu.spirinigor.blogengine.api.response.CaptchaResponse;
 import edu.spirinigor.blogengine.api.response.CreateUserResponse;
 import edu.spirinigor.blogengine.api.response.LoginResponse;
+import edu.spirinigor.blogengine.api.response.LogoutResponse;
 import edu.spirinigor.blogengine.api.response.NoAuthCheckResponse;
 import edu.spirinigor.blogengine.service.AuthService;
 import org.springframework.http.HttpStatus;
@@ -46,5 +47,10 @@ public class ApiAuthController {
     public ResponseEntity<LoginResponse>login(@RequestBody LoginRequest loginRequest){
         LoginResponse loginResponse = authService.login(loginRequest);
         return ResponseEntity.ok(loginResponse);
+    }
+
+    @GetMapping("logout")
+    public ResponseEntity<LogoutResponse> logout(){
+        return ResponseEntity.ok(authService.logout());
     }
 }

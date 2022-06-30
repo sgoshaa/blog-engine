@@ -1,6 +1,7 @@
 package edu.spirinigor.blogengine.repository;
 
 import edu.spirinigor.blogengine.model.Post;
+import edu.spirinigor.blogengine.model.enums.ModerationStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -35,7 +36,7 @@ public interface PostRepository extends JpaRepository<Post, Integer>, JpaSpecifi
     @Query("SELECT p FROM Post p " +
             "WHERE date(p.time) = :date " +
             "AND p.moderationStatus = 'ACCEPTED'  AND p.isActive = 1 AND p.time <= NOW()")
-    Page<Post> getPostByDate(Date date,Pageable pageable);
+    Page<Post> getPostByDate(Date date, Pageable pageable);
 
     @Query("select p from Post p " +
             "inner join TagToPost t2p on p.id = t2p.postId " +
@@ -47,9 +48,15 @@ public interface PostRepository extends JpaRepository<Post, Integer>, JpaSpecifi
             "inner join TagToPost t2p on p.id = t2p.postId " +
             "inner join Tag t on t2p.tagId = t.id " +
             "WHERE t.name = :query and moderation_status = 'ACCEPTED' and p.isActive = 1 and p.time <= NOW()")
-    Page<Post> getPostByTagName(String query,Pageable pageable);
+    Page<Post> getPostByTagName(String query, Pageable pageable);
 
     @Query("select p from Post p " +
             "left join fetch p.postComments where p.id = :id and moderation_status = 'ACCEPTED' and p.time <= NOW()")
     Post getPostById(Integer id);
+
+    @Query("select p from Post p where p.isActive = 0 and p.user.id = :userId")
+    Page<Post> findAllMyByStatusInactive(Integer userId, Pageable pageable);
+
+    @Query("select p from Post p where p.user.id = :userId and p.isActive = 1 and p.moderationStatus = :status")
+    Page<Post> findAllMyByStatus(Integer userId, ModerationStatus status, Pageable pageable);
 }

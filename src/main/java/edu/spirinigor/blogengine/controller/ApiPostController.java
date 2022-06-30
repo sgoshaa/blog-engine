@@ -74,4 +74,11 @@ public class ApiPostController {
         }
         return new ResponseEntity<>(postById, HttpStatus.OK);
     }
+
+    @GetMapping("post/my")
+    public ResponseEntity<ListPostResponse> getMyPost(@RequestParam(value = "offset", defaultValue = "0") Integer offset,
+                                                      @RequestParam(value = "limit", defaultValue = "10") Integer limit,
+                                                      @RequestParam(value = "status", defaultValue = "") String status){
+        return ResponseEntity.ok(postService.getMyPost(offset,limit,status));
+    }
 }
