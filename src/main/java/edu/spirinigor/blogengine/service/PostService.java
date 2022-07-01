@@ -1,12 +1,18 @@
 package edu.spirinigor.blogengine.service;
 
+import edu.spirinigor.blogengine.api.request.CreatePostRequest;
+import edu.spirinigor.blogengine.api.request.ModerationRequest;
+import edu.spirinigor.blogengine.api.response.OperationsOnPostResponse;
 import edu.spirinigor.blogengine.api.response.CalendarResponse;
 import edu.spirinigor.blogengine.api.response.ListPostResponse;
 import edu.spirinigor.blogengine.api.response.PostResponse;
+import edu.spirinigor.blogengine.dto.ErrorsCreatingPostDto;
 import edu.spirinigor.blogengine.mapper.PostMapper;
 import edu.spirinigor.blogengine.model.Post;
+import edu.spirinigor.blogengine.model.User;
 import edu.spirinigor.blogengine.model.enums.ModerationStatus;
 import edu.spirinigor.blogengine.repository.PostRepository;
+import edu.spirinigor.blogengine.repository.UserRepository;
 import edu.spirinigor.blogengine.repository.specification.SearchPostSpecification;
 import edu.spirinigor.blogengine.util.Pagination;
 import edu.spirinigor.blogengine.util.UserUtils;
@@ -22,6 +28,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -32,11 +39,13 @@ public class PostService {
     private final PostMapper postMapper = Mappers.getMapper(PostMapper.class);
     private final Pagination pagination;
     private final SearchPostSpecification postSpecification;
+    private final UserRepository userRepository;
 
-    public PostService(PostRepository postRepository, Pagination pagination, SearchPostSpecification postSpecification) {
+    public PostService(PostRepository postRepository, Pagination pagination, SearchPostSpecification postSpecification, UserRepository userRepository) {
         this.postRepository = postRepository;
         this.pagination = pagination;
         this.postSpecification = postSpecification;
+        this.userRepository = userRepository;
     }
 
     public ListPostResponse getListPost(Integer offset, Integer limit, String mode) {
@@ -49,11 +58,11 @@ public class PostService {
                 postList = postRepository.findBestPost(pagination.getPage(offset, limit));
                 break;
             case "early"://early - сортировать по дате публикации, выводить сначала старые
-                postList = postRepository.findAll(pagination.getPage(offset, limit, Sort.by("time").ascending()));
+                postList = postRepository.findEarlyPost(pagination.getPage(offset, limit));
                 break;
             default://recent - сортировать по дате публикации, выводить сначала новые (если mode не задан
                 // , использовать это значение по умолчанию)
-                postList = postRepository.findAll(pagination.getPage(offset, limit, Sort.by("time").descending()));
+                postList = postRepository.findRecentPost(pagination.getPage(offset, limit));
                 break;
         }
         return getListPostResponse(postList);
@@ -108,7 +117,7 @@ public class PostService {
     }
 
     public PostResponse getPostById(Integer id) {
-        Post byId = postRepository.getPostById(id);
+        Post byId = postRepository.getPostById(id, LocalDateTime.now());
         if (byId == null) {
             return null;
         }
@@ -122,7 +131,7 @@ public class PostService {
         Page<Post> allMyPost = null;
         switch (status) {
             case "inactive":
-                allMyPost = postRepository.findAllMyByStatusInactive(idCurrentUser, pagination.getPage(offset, limit));
+                allMyPost = postRepository.findAllMyByStatusInActive(idCurrentUser, pagination.getPage(offset, limit));
                 break;
             case "pending":
                 allMyPost = postRepository.findAllMyByStatus(idCurrentUser
@@ -150,30 +159,70 @@ public class PostService {
         Page<Post> allPost = null;
         switch (status) {
             case "new":
-                allPost = postRepository.findAllForModeration(idCurrentUser
-                        , ModerationStatus.NEW, pagination.getPage(offset, limit));
+                allPost = postRepository.findAllForModeration(
+                        ModerationStatus.NEW, pagination.getPage(offset, limit, Sort.by("time").descending())
+                );
                 break;
             case "declined":
-                allPost = postRepository.findAllForModeration(idCurrentUser
-                        , ModerationStatus.DECLINED, pagination.getPage(offset, limit));
+                allPost = postRepository.findAllForModerationMy(idCurrentUser
+                        , ModerationStatus.DECLINED, pagination.getPage(offset, limit, Sort.by("time").descending()));
                 break;
             case "accepted":
-                allPost = postRepository.findAllForModeration(idCurrentUser
-                        , ModerationStatus.ACCEPTED, pagination.getPage(offset, limit));
+                allPost = postRepository.findAllForModerationMy(idCurrentUser
+                        , ModerationStatus.ACCEPTED, pagination.getPage(offset, limit, Sort.by("time").descending()));
                 break;
         }
 
         assert allPost != null;
 
-        if (allPost.isEmpty()){
+        if (allPost.isEmpty()) {
             return getEmptyPostResponse();
         }
         return getListPostResponse(allPost);
     }
 
+    public OperationsOnPostResponse addPost(CreatePostRequest createPostRequest) {
+        OperationsOnPostResponse operationsOnPostResponse = new OperationsOnPostResponse();
+        ErrorsCreatingPostDto errorsCreatingPostDto = errorCheckCreatePostRequest(createPostRequest);
+        if (errorsCreatingPostDto != null) {
+            operationsOnPostResponse.setResult(false);
+            operationsOnPostResponse.setErrorsCreatingPostDto(errorsCreatingPostDto);
+            return operationsOnPostResponse;
+        }
+        Post post = postMapper.toPost(createPostRequest);
+
+        User currentUser = userRepository.findById(UserUtils.getIdCurrentUser()).get();
+        post.setUser(currentUser);
+
+        postRepository.save(post);
+
+        operationsOnPostResponse.setResult(true);
+
+        return operationsOnPostResponse;
+    }
+
+    public OperationsOnPostResponse updatePost(Integer id, CreatePostRequest request) {
+
+        Post currentPost = postRepository.findById(id).orElseThrow(
+                () -> new RuntimeException("Не найден пост с таким id " + id));
+
+        Post updatedPost = postMapper.toPost(request);
+        Post post = postMapper.updatePost(currentPost, updatedPost);
+
+        if (currentPost.getUser().equals(UserUtils.getCurrentUser())){
+            post.setModerationStatus(ModerationStatus.NEW);
+        }
+        //ToDo подумать что можно сделать с тегами,так как они начинаю задваиваться,тупо удалить их не могу
+        // так как они могут быть у нескольких статей
+        postRepository.save(post);
+        OperationsOnPostResponse operationsOnPostResponse = new OperationsOnPostResponse();
+        operationsOnPostResponse.setResult(true);
+        return operationsOnPostResponse;
+    }
+
     private void updateViewCount(Post byId) {
         Integer idCurrentUser = UserUtils.getIdCurrentUser();
-        if (byId.getModerator().getId() == idCurrentUser || byId.getUser().getId() == idCurrentUser ) {
+        if (byId.getModerator().getId() == idCurrentUser || byId.getUser().getId() == idCurrentUser) {
             return;
         }
         byId.setViewCount(byId.getViewCount() + 1);
@@ -192,5 +241,44 @@ public class PostService {
         listPostResponse.setCount(0L);
         listPostResponse.setPosts(new ArrayList<>());
         return listPostResponse;
+    }
+
+    private ErrorsCreatingPostDto errorCheckCreatePostRequest(CreatePostRequest createPostRequest) {
+        ErrorsCreatingPostDto errorsCreatingPostDto = new ErrorsCreatingPostDto();
+        if (createPostRequest.getTitle().length() <= 3) {
+            errorsCreatingPostDto.setTitleField();
+        }
+        if (createPostRequest.getText().length() <= 50) {
+            errorsCreatingPostDto.setTextField();
+        }
+        if (errorsCreatingPostDto.getText().isEmpty() && errorsCreatingPostDto.getTitle().isEmpty()) {
+            errorsCreatingPostDto = null;
+        }
+        return errorsCreatingPostDto;
+    }
+
+    public OperationsOnPostResponse moderationPost(ModerationRequest request) {
+        OperationsOnPostResponse operationsOnPostResponse = new OperationsOnPostResponse();
+        User currentUser = UserUtils.getCurrentUser();
+        if (currentUser.getIsModerator() != 1) {
+            operationsOnPostResponse.setResult(false);
+            return operationsOnPostResponse;
+        }
+        Post post = postRepository.findById(request.getPostId())
+                .orElseThrow(() -> new RuntimeException("Нет поста с таким id " + request.getPostId()));
+
+        switch (request.getDecision()) {
+            case "accept":
+                post.setModerationStatus(ModerationStatus.ACCEPTED);
+                break;
+            case "decline":
+                post.setModerationStatus(ModerationStatus.DECLINED);
+                break;
+        }
+        post.setModerator(currentUser);
+        postRepository.save(post);
+
+        operationsOnPostResponse.setResult(true);
+        return operationsOnPostResponse;
     }
 }

@@ -4,10 +4,12 @@ package edu.spirinigor.blogengine.service;
 import edu.spirinigor.blogengine.api.response.TagResponse;
 import edu.spirinigor.blogengine.dto.TagDTO;
 import edu.spirinigor.blogengine.model.Post;
+import edu.spirinigor.blogengine.model.enums.ModerationStatus;
 import edu.spirinigor.blogengine.repository.PostRepository;
 import edu.spirinigor.blogengine.repository.TagRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,7 +29,10 @@ public class TagService {
         List<Post> posts;
 //        query = "Ja";//вписал жестко чтобы проверить работу метода
         if (query.isEmpty()) {
-            posts = postRepository.findAll();
+            posts = postRepository.findAllByTimeLessThanEqualAndIsActiveAndModerationStatus(
+                    LocalDateTime.now(), (short) 1, ModerationStatus.ACCEPTED
+            );
+            //postRepository.findAll();
         } else {
             posts = postRepository.getPostByTagName(query + "%");
             String finalQuery = query;//удалить если не нужно будет,когда разберусь откуда приходит query

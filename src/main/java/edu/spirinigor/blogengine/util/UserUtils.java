@@ -20,7 +20,10 @@ public class UserUtils {
     }
 
     public static Integer getIdCurrentUser() {
+        return getCurrentUser().getId();
+    }
 
+    public static User getCurrentUser() {
         SecurityContext context = SecurityContextHolder.getContext();
         Authentication authentication = context.getAuthentication();
 
@@ -28,7 +31,6 @@ public class UserUtils {
 
         Optional<User> userOptional = userRepository.findByEmail(userDetails.getUsername());
         User user = userOptional.get();
-
-        return user.getId();
+        return user;
     }
 }
