@@ -9,6 +9,7 @@ import edu.spirinigor.blogengine.api.response.PostResponse;
 import edu.spirinigor.blogengine.dto.ErrorsCreatingPostDto;
 import edu.spirinigor.blogengine.mapper.PostMapper;
 import edu.spirinigor.blogengine.model.Post;
+import edu.spirinigor.blogengine.model.Tag;
 import edu.spirinigor.blogengine.model.User;
 import edu.spirinigor.blogengine.model.enums.ModerationStatus;
 import edu.spirinigor.blogengine.repository.PostRepository;
@@ -20,6 +21,7 @@ import org.mapstruct.factory.Mappers;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Date;
 import java.time.LocalDate;
@@ -28,7 +30,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -40,12 +41,17 @@ public class PostService {
     private final Pagination pagination;
     private final SearchPostSpecification postSpecification;
     private final UserRepository userRepository;
+    private final TagService tagService;
+    private final TagToPostService tagToPostService;
 
-    public PostService(PostRepository postRepository, Pagination pagination, SearchPostSpecification postSpecification, UserRepository userRepository) {
+    public PostService(PostRepository postRepository, Pagination pagination, SearchPostSpecification postSpecification,
+                       UserRepository userRepository, TagService tagService, TagToPostService tagToPostService) {
         this.postRepository = postRepository;
         this.pagination = pagination;
         this.postSpecification = postSpecification;
         this.userRepository = userRepository;
+        this.tagService = tagService;
+        this.tagToPostService = tagToPostService;
     }
 
     public ListPostResponse getListPost(Integer offset, Integer limit, String mode) {
@@ -190,17 +196,17 @@ public class PostService {
             return operationsOnPostResponse;
         }
         Post post = postMapper.toPost(createPostRequest);
-
+        List<Tag> tags = tagService.getExistingTagsOrCreateNew(createPostRequest.getTags());
+        post.setTags(tags);
         User currentUser = userRepository.findById(UserUtils.getIdCurrentUser()).get();
         post.setUser(currentUser);
-
         postRepository.save(post);
 
         operationsOnPostResponse.setResult(true);
-
         return operationsOnPostResponse;
     }
 
+    @Transactional
     public OperationsOnPostResponse updatePost(Integer id, CreatePostRequest request) {
 
         Post currentPost = postRepository.findById(id).orElseThrow(
@@ -209,15 +215,33 @@ public class PostService {
         Post updatedPost = postMapper.toPost(request);
         Post post = postMapper.updatePost(currentPost, updatedPost);
 
-        if (currentPost.getUser().equals(UserUtils.getCurrentUser())){
+        if (currentPost.getUser().equals(UserUtils.getCurrentUser())) {
             post.setModerationStatus(ModerationStatus.NEW);
         }
-        //ToDo подумать что можно сделать с тегами,так как они начинаю задваиваться,тупо удалить их не могу
-        // так как они могут быть у нескольких статей
+        post.setTags(tagService.getExistingTagsOrCreateNew(request.getTags()));
+        deletingNonExistingTagsFromPost(currentPost, post);
         postRepository.save(post);
         OperationsOnPostResponse operationsOnPostResponse = new OperationsOnPostResponse();
         operationsOnPostResponse.setResult(true);
         return operationsOnPostResponse;
+    }
+
+    private void deletingNonExistingTagsFromPost(Post current, Post updated) {
+        List<Tag> currentTags = current.getTags();
+        List<Tag> updatedTags = updated.getTags();
+
+        ArrayList<Tag> tagsToDelete = new ArrayList<>();
+
+        currentTags.forEach(tag -> {
+            if (!updatedTags.contains(tag)) {
+                tagsToDelete.add(tag);
+            }
+        });
+        if (!tagsToDelete.isEmpty()) {
+            tagToPostService.removingTagsFromPost(current.getId(), tagsToDelete.stream().map(Tag::getId)
+                    .collect(Collectors.toList())
+            );
+        }
     }
 
     private void updateViewCount(Post byId) {

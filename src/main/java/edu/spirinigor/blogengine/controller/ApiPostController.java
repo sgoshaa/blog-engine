@@ -40,7 +40,7 @@ public class ApiPostController {
     }
 
     @GetMapping("post/search")
-   // @PreAuthorize("hasAuthority('user:moderate')")
+    // @PreAuthorize("hasAuthority('user:moderate')")
     public ResponseEntity<ListPostResponse> searchPost(
             @RequestParam(value = "offset", defaultValue = "0") Integer offset,
             @RequestParam(value = "limit", defaultValue = "10") Integer limit,
@@ -82,17 +82,19 @@ public class ApiPostController {
 
     @GetMapping("post/my")
     @PreAuthorize("hasAuthority('user:write')")
-    public ResponseEntity<ListPostResponse> getMyPost(@RequestParam(value = "offset", defaultValue = "0") Integer offset,
-                                                      @RequestParam(value = "limit", defaultValue = "10") Integer limit,
-                                                      @RequestParam(value = "status", defaultValue = "") String status) {
+    public ResponseEntity<ListPostResponse> getMyPost(
+            @RequestParam(value = "offset", defaultValue = "0") Integer offset,
+            @RequestParam(value = "limit", defaultValue = "10") Integer limit,
+            @RequestParam(value = "status", defaultValue = "") String status) {
         return ResponseEntity.ok(postService.getMyPost(offset, limit, status));
     }
 
     @GetMapping("post/moderation")
     @PreAuthorize("hasAuthority('user:moderate')")
-    public ResponseEntity<ListPostResponse> getPostForModeration(@RequestParam(value = "offset", defaultValue = "0") Integer offset,
-                                                                 @RequestParam(value = "limit", defaultValue = "10") Integer limit,
-                                                                 @RequestParam(value = "status", defaultValue = "") String status) {
+    public ResponseEntity<ListPostResponse> getPostForModeration(
+            @RequestParam(value = "offset", defaultValue = "0") Integer offset,
+            @RequestParam(value = "limit", defaultValue = "10") Integer limit,
+            @RequestParam(value = "status", defaultValue = "") String status) {
         return ResponseEntity.ok(postService.getPostForModeration(offset, limit, status));
     }
 
@@ -104,13 +106,13 @@ public class ApiPostController {
     @PutMapping("post/{id}")
     @PreAuthorize("hasAuthority('user:write')")
     public ResponseEntity<OperationsOnPostResponse> updatePost(@PathVariable Integer id,
-                                                               @RequestBody CreatePostRequest createPostRequest){
-        return ResponseEntity.ok(postService.updatePost(id,createPostRequest));
+                                                               @RequestBody CreatePostRequest createPostRequest) {
+        return ResponseEntity.ok(postService.updatePost(id, createPostRequest));
     }
 
     @PostMapping("moderation")
     @PreAuthorize("hasAuthority('user:moderate')")
-    public ResponseEntity<OperationsOnPostResponse>moderationPost(@RequestBody ModerationRequest request){
+    public ResponseEntity<OperationsOnPostResponse> moderationPost(@RequestBody ModerationRequest request) {
         return ResponseEntity.ok(postService.moderationPost(request));
     }
 }

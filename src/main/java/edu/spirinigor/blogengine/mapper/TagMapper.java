@@ -18,6 +18,6 @@ public interface TagMapper {
 
     Tag map(String name);
 
-    List<Tag>toTag(List<String>tags);
+    List<Tag> toListTag(List<String>tags);
 
 }

@@ -39,7 +39,7 @@ public interface PostMapper {
     @Mapping(target = "timeStamp", source = "time", qualifiedByName = "convertDateToLong")
     PostResponse postToPostResponse(Post post);
 
-    @Mapping(target = "tags", source = "tags")
+    @Mapping(target = "tags", ignore = true)
     @Mapping(target = "moderationStatus", expression = "java(setModerationStatus())")
     @Mapping(target = "isActive", source = "active")
     @Mapping(target = "time", expression = "java(checkTimestamp(request.getTimestamp()))")
@@ -56,7 +56,7 @@ public interface PostMapper {
     @Mapping(target = "title", source = "updatedPost.title")
     @Mapping(target = "viewCount", source = "currentPost.viewCount")
     @Mapping(target = "postComments", source = "currentPost.postComments")
-    @Mapping(target = "tags", expression = "java(getOnlyUniqueTags(currentPost.getTags(),updatedPost.getTags()))")//source = "updatedPost.tags")
+    @Mapping(target = "tags",ignore = true)// expression = "java(getOnlyUniqueTags(currentPost.getTags(),updatedPost.getTags()))")//source = "updatedPost.tags")
     @Mapping(target = "postVotes", source = "currentPost.postVotes")
     Post updatePost(Post currentPost, Post updatedPost);
 
