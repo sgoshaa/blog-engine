@@ -42,16 +42,14 @@ public class PostService {
     private final SearchPostSpecification postSpecification;
     private final UserRepository userRepository;
     private final TagService tagService;
-    private final TagToPostService tagToPostService;
 
     public PostService(PostRepository postRepository, Pagination pagination, SearchPostSpecification postSpecification,
-                       UserRepository userRepository, TagService tagService, TagToPostService tagToPostService) {
+                       UserRepository userRepository, TagService tagService) {
         this.postRepository = postRepository;
         this.pagination = pagination;
         this.postSpecification = postSpecification;
         this.userRepository = userRepository;
         this.tagService = tagService;
-        this.tagToPostService = tagToPostService;
     }
 
     public ListPostResponse getListPost(Integer offset, Integer limit, String mode) {
@@ -219,29 +217,10 @@ public class PostService {
             post.setModerationStatus(ModerationStatus.NEW);
         }
         post.setTags(tagService.getExistingTagsOrCreateNew(request.getTags()));
-        deletingNonExistingTagsFromPost(currentPost, post);
         postRepository.save(post);
         OperationsOnPostResponse operationsOnPostResponse = new OperationsOnPostResponse();
         operationsOnPostResponse.setResult(true);
         return operationsOnPostResponse;
-    }
-
-    private void deletingNonExistingTagsFromPost(Post current, Post updated) {
-        List<Tag> currentTags = current.getTags();
-        List<Tag> updatedTags = updated.getTags();
-
-        ArrayList<Tag> tagsToDelete = new ArrayList<>();
-
-        currentTags.forEach(tag -> {
-            if (!updatedTags.contains(tag)) {
-                tagsToDelete.add(tag);
-            }
-        });
-        if (!tagsToDelete.isEmpty()) {
-            tagToPostService.removingTagsFromPost(current.getId(), tagsToDelete.stream().map(Tag::getId)
-                    .collect(Collectors.toList())
-            );
-        }
     }
 
     private void updateViewCount(Post byId) {

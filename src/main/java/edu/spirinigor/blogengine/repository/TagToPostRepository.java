@@ -11,6 +11,4 @@ public interface TagToPostRepository extends JpaRepository<TagToPost,Integer> {
 
     List<TagToPost>findByPostIdAndTagIdIn(Integer postId,List<Integer>tagsId);
 
-    void deleteByPostIdAndTagIdIn(Integer postId,List<Integer>tagsId);
-
 }
