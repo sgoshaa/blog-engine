@@ -9,9 +9,11 @@ spring:
   jpa:
     show-sql: false
     hibernate:
-      jdbc:
-        time_zone: UTC+5
       ddl-auto: validate
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 2MB
 
 blog.title: DevPub
 blog.subtitle: Рассказы разработчиков

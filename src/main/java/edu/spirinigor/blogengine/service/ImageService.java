@@ -1,9 +1,5 @@
 package edu.spirinigor.blogengine.service;
 
-import ch.qos.logback.core.joran.conditional.IfAction;
-import edu.spirinigor.blogengine.dto.ErrorImageDto;
-import edu.spirinigor.blogengine.dto.ErrorsCreatingPostDto;
-import edu.spirinigor.blogengine.dto.ImageDto;
 import edu.spirinigor.blogengine.exception.ImageException;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Service;
@@ -19,19 +15,22 @@ import java.nio.file.StandardCopyOption;
 @Service
 public class ImageService {
 
-    private final String DIRECTORY_NAME = "upload";
+    private final int NUMBER_SUB_FOLDERS = 3;
+    private final String ROOT_DIRECTORY_NAME = "upload";
 
     public String uploadImage(MultipartFile file) {
-        checkImageFormat(file.getContentType());
         Path copyLocation = null;
         try {
-            String dir = createDir(DIRECTORY_NAME);
+            assert file.getContentType() != null;
+            String imageExtension = getImageExtension(file.getContentType());
+            String dir = createDir(ROOT_DIRECTORY_NAME);
             copyLocation = Paths
-                    .get(dir + File.separator + getRandomString(9) + ".jpg");
+                    .get(dir + File.separator + getRandomString(9) + imageExtension);
             Files.copy(file.getInputStream(), copyLocation, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             e.printStackTrace();
         }
+        assert copyLocation != null;
         return copyLocation.toString();
     }
 
@@ -47,7 +46,7 @@ public class ImageService {
         }
         String folder = dir;
         Path path;
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < NUMBER_SUB_FOLDERS; i++) {
             path = Paths.get(folder + File.separator + getRandomString(2));
             if (!Files.exists(path)) {
                 Files.createDirectory(path);
@@ -57,8 +56,12 @@ public class ImageService {
         return folder;
     }
 
-    private void checkImageFormat(String format) {
-        if (!format.equals("image/png") || !format.equals("image/jpeg")) {
+    private String getImageExtension(String imageType){
+        if (imageType.equals("image/jpeg") || imageType.equals("image/jpg") ){
+            return ".jpg";
+        }else if (imageType.equals("image/png")){
+            return ".png";
+        }else {
             throw new ImageException("Изображение должно быть png или jpg");
         }
     }
