@@ -2,9 +2,11 @@ package edu.spirinigor.blogengine.service;
 
 import edu.spirinigor.blogengine.api.request.CreatePostRequest;
 import edu.spirinigor.blogengine.api.request.ModerationRequest;
+import edu.spirinigor.blogengine.api.request.PostCommentRequest;
 import edu.spirinigor.blogengine.api.response.OperationsOnPostResponse;
 import edu.spirinigor.blogengine.api.response.CalendarResponse;
 import edu.spirinigor.blogengine.api.response.ListPostResponse;
+import edu.spirinigor.blogengine.api.response.PostCommentResponse;
 import edu.spirinigor.blogengine.api.response.PostResponse;
 import edu.spirinigor.blogengine.dto.ErrorsCreatingPostDto;
 import edu.spirinigor.blogengine.mapper.PostMapper;
