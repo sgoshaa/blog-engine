@@ -2,13 +2,12 @@ package edu.spirinigor.blogengine.service;
 
 import edu.spirinigor.blogengine.api.request.CreatePostRequest;
 import edu.spirinigor.blogengine.api.request.ModerationRequest;
-import edu.spirinigor.blogengine.api.request.PostCommentRequest;
 import edu.spirinigor.blogengine.api.response.OperationsOnPostResponse;
 import edu.spirinigor.blogengine.api.response.CalendarResponse;
 import edu.spirinigor.blogengine.api.response.ListPostResponse;
-import edu.spirinigor.blogengine.api.response.PostCommentResponse;
 import edu.spirinigor.blogengine.api.response.PostResponse;
 import edu.spirinigor.blogengine.dto.ErrorsCreatingPostDto;
+import edu.spirinigor.blogengine.exception.AnyException;
 import edu.spirinigor.blogengine.mapper.PostMapper;
 import edu.spirinigor.blogengine.model.Post;
 import edu.spirinigor.blogengine.model.Tag;
@@ -122,7 +121,7 @@ public class PostService {
         return getListPostResponse(postByTagName);
     }
 
-    public PostResponse getPostById(Integer id) {
+    public PostResponse getPost(Integer id) {
         Post byId = postRepository.getPostById(id, LocalDateTime.now());
         if (byId == null) {
             return null;
@@ -208,13 +207,9 @@ public class PostService {
 
     @Transactional
     public OperationsOnPostResponse updatePost(Integer id, CreatePostRequest request) {
-
-        Post currentPost = postRepository.findById(id).orElseThrow(
-                () -> new RuntimeException("Не найден пост с таким id " + id));
-
+        Post currentPost = getPostById(id);
         Post updatedPost = postMapper.toPost(request);
         Post post = postMapper.updatePost(currentPost, updatedPost);
-
         if (currentPost.getUser().equals(UserUtils.getCurrentUser())) {
             post.setModerationStatus(ModerationStatus.NEW);
         }
@@ -285,5 +280,14 @@ public class PostService {
 
         operationsOnPostResponse.setResult(true);
         return operationsOnPostResponse;
+    }
+
+    public Post getPostById(int id) {
+        Post post = postRepository.findById(id).orElseThrow(
+                () -> {
+                    throw new AnyException("Пост с таким id = " + id + " не существует.");
+                }
+        );
+        return post;
     }
 }

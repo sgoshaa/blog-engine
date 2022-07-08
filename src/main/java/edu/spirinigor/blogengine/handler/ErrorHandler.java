@@ -1,7 +1,9 @@
 package edu.spirinigor.blogengine.handler;
 
 import edu.spirinigor.blogengine.dto.ErrorImageDto;
+import edu.spirinigor.blogengine.dto.ExceptionDto;
 import edu.spirinigor.blogengine.dto.ImageDto;
+import edu.spirinigor.blogengine.exception.AnyException;
 import edu.spirinigor.blogengine.exception.ImageException;
 import org.apache.tomcat.util.http.fileupload.impl.FileSizeLimitExceededException;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,5 +37,12 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
         imageDto.setResult(false);
         imageDto.setErrors(errorImageDto);
         return new ResponseEntity<>(imageDto, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(AnyException.class)
+    public ResponseEntity<ExceptionDto> handlerImageException(AnyException exception) {
+        ExceptionDto exceptionDto = new ExceptionDto();
+        exceptionDto.setMessage(exception.getMessage());
+        return new ResponseEntity<>(exceptionDto, HttpStatus.BAD_REQUEST);
     }
 }
