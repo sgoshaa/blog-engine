@@ -5,7 +5,7 @@ import com.github.cage.YCage;
 import edu.spirinigor.blogengine.api.request.CreateUserRequest;
 import edu.spirinigor.blogengine.api.request.LoginRequest;
 import edu.spirinigor.blogengine.api.response.CaptchaResponse;
-import edu.spirinigor.blogengine.api.response.CreateUserResponse;
+import edu.spirinigor.blogengine.api.response.Response;
 import edu.spirinigor.blogengine.api.response.LoginResponse;
 import edu.spirinigor.blogengine.api.response.LogoutResponse;
 import edu.spirinigor.blogengine.api.response.UserLoginResponse;
@@ -23,7 +23,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -117,22 +116,22 @@ public class AuthService {
     }
 
     @Transactional
-    public CreateUserResponse createUser(CreateUserRequest userDto) {
-        CreateUserResponse createUserResponse = new CreateUserResponse();
+    public Response createUser(CreateUserRequest userDto) {
+        Response userResponse = new Response();
         if (isCorrectEmail(userDto.getEmail())
                 && isCorrectCaptcha(userDto.getCaptcha(), userDto.getCaptchaSecret())
                 && isCorrectName(userDto.getName())
                 && isCorrectPassword(userDto.getPassword())
         ) {
-            createUserResponse.setResult(true);
+            userResponse.setResult(true);
             edu.spirinigor.blogengine.model.User user = userMapper.dtoToUser(userDto);
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             userRepository.save(user);
-            return createUserResponse;
+            return userResponse;
         }
-        createUserResponse.setResult(false);
-        createUserResponse.setErrorsCreatingUserDto(checkUser(userDto));
-        return createUserResponse;
+        userResponse.setResult(false);
+        userResponse.setErrors(checkUser(userDto));
+        return userResponse;
     }
 
     private LoginResponse getLoginResponse(String email) {

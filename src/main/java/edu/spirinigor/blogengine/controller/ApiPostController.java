@@ -2,7 +2,7 @@ package edu.spirinigor.blogengine.controller;
 
 import edu.spirinigor.blogengine.api.request.CreatePostRequest;
 import edu.spirinigor.blogengine.api.request.ModerationRequest;
-import edu.spirinigor.blogengine.api.response.OperationsOnPostResponse;
+import edu.spirinigor.blogengine.api.response.Response;
 import edu.spirinigor.blogengine.api.response.CalendarResponse;
 import edu.spirinigor.blogengine.api.response.ListPostResponse;
 import edu.spirinigor.blogengine.api.response.PostResponse;
@@ -99,20 +99,20 @@ public class ApiPostController {
     }
 
     @PostMapping("post")
-    public ResponseEntity<OperationsOnPostResponse> addPost(@RequestBody CreatePostRequest createPostRequest) {
+    public ResponseEntity<Response> addPost(@RequestBody CreatePostRequest createPostRequest) {
         return ResponseEntity.ok(postService.addPost(createPostRequest));
     }
 
     @PutMapping("post/{id}")
     @PreAuthorize("hasAuthority('user:write')")
-    public ResponseEntity<OperationsOnPostResponse> updatePost(@PathVariable Integer id,
-                                                               @RequestBody CreatePostRequest createPostRequest) {
+    public ResponseEntity<Response> updatePost(@PathVariable Integer id,
+                                               @RequestBody CreatePostRequest createPostRequest) {
         return ResponseEntity.ok(postService.updatePost(id, createPostRequest));
     }
 
     @PostMapping("moderation")
     @PreAuthorize("hasAuthority('user:moderate')")
-    public ResponseEntity<OperationsOnPostResponse> moderationPost(@RequestBody ModerationRequest request) {
+    public ResponseEntity<Response> moderationPost(@RequestBody ModerationRequest request) {
         return ResponseEntity.ok(postService.moderationPost(request));
     }
 }

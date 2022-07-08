@@ -2,7 +2,7 @@ package edu.spirinigor.blogengine.service;
 
 import edu.spirinigor.blogengine.api.request.CreatePostRequest;
 import edu.spirinigor.blogengine.api.request.ModerationRequest;
-import edu.spirinigor.blogengine.api.response.OperationsOnPostResponse;
+import edu.spirinigor.blogengine.api.response.Response;
 import edu.spirinigor.blogengine.api.response.CalendarResponse;
 import edu.spirinigor.blogengine.api.response.ListPostResponse;
 import edu.spirinigor.blogengine.api.response.PostResponse;
@@ -186,13 +186,13 @@ public class PostService {
         return getListPostResponse(allPost);
     }
 
-    public OperationsOnPostResponse addPost(CreatePostRequest createPostRequest) {
-        OperationsOnPostResponse operationsOnPostResponse = new OperationsOnPostResponse();
+    public Response addPost(CreatePostRequest createPostRequest) {
+        Response response = new Response();
         ErrorsCreatingPostDto errorsCreatingPostDto = errorCheckCreatePostRequest(createPostRequest);
         if (errorsCreatingPostDto != null) {
-            operationsOnPostResponse.setResult(false);
-            operationsOnPostResponse.setErrorsCreatingPostDto(errorsCreatingPostDto);
-            return operationsOnPostResponse;
+            response.setResult(false);
+            response.setErrors(errorsCreatingPostDto);
+            return response;
         }
         Post post = postMapper.toPost(createPostRequest);
         List<Tag> tags = tagService.getExistingTagsOrCreateNew(createPostRequest.getTags());
@@ -201,12 +201,12 @@ public class PostService {
         post.setUser(currentUser);
         postRepository.save(post);
 
-        operationsOnPostResponse.setResult(true);
-        return operationsOnPostResponse;
+        response.setResult(true);
+        return response;
     }
 
     @Transactional
-    public OperationsOnPostResponse updatePost(Integer id, CreatePostRequest request) {
+    public Response updatePost(Integer id, CreatePostRequest request) {
         Post currentPost = getPostById(id);
         Post updatedPost = postMapper.toPost(request);
         Post post = postMapper.updatePost(currentPost, updatedPost);
@@ -215,9 +215,9 @@ public class PostService {
         }
         post.setTags(tagService.getExistingTagsOrCreateNew(request.getTags()));
         postRepository.save(post);
-        OperationsOnPostResponse operationsOnPostResponse = new OperationsOnPostResponse();
-        operationsOnPostResponse.setResult(true);
-        return operationsOnPostResponse;
+        Response response = new Response();
+        response.setResult(true);
+        return response;
     }
 
     private void updateViewCount(Post byId) {
@@ -257,12 +257,12 @@ public class PostService {
         return errorsCreatingPostDto;
     }
 
-    public OperationsOnPostResponse moderationPost(ModerationRequest request) {
-        OperationsOnPostResponse operationsOnPostResponse = new OperationsOnPostResponse();
+    public Response moderationPost(ModerationRequest request) {
+        Response response = new Response();
         User currentUser = UserUtils.getCurrentUser();
         if (currentUser.getIsModerator() != 1) {
-            operationsOnPostResponse.setResult(false);
-            return operationsOnPostResponse;
+            response.setResult(false);
+            return response;
         }
         Post post = getPostById(request.getPostId());
 
@@ -277,8 +277,8 @@ public class PostService {
         post.setModerator(currentUser);
         postRepository.save(post);
 
-        operationsOnPostResponse.setResult(true);
-        return operationsOnPostResponse;
+        response.setResult(true);
+        return response;
     }
 
     public Post getPostById(int id) {

@@ -7,8 +7,7 @@ import lombok.Data;
 
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class OperationsOnPostResponse {
+public class Response {
     private Boolean result;
-    @JsonProperty("errors")
-    private ErrorsCreatingPostDto errorsCreatingPostDto;
+    private Object errors;
 }
