@@ -264,8 +264,7 @@ public class PostService {
             operationsOnPostResponse.setResult(false);
             return operationsOnPostResponse;
         }
-        Post post = postRepository.findById(request.getPostId())
-                .orElseThrow(() -> new RuntimeException("Нет поста с таким id " + request.getPostId()));
+        Post post = getPostById(request.getPostId());
 
         switch (request.getDecision()) {
             case "accept":
@@ -283,11 +282,10 @@ public class PostService {
     }
 
     public Post getPostById(int id) {
-        Post post = postRepository.findById(id).orElseThrow(
+        return postRepository.findById(id).orElseThrow(
                 () -> {
                     throw new AnyException("Пост с таким id = " + id + " не существует.");
                 }
         );
-        return post;
     }
 }
