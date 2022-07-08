@@ -283,9 +283,6 @@ public class PostService {
 
     public Post getPostById(int id) {
         return postRepository.findById(id).orElseThrow(
-                () -> {
-                    throw new AnyException("Пост с таким id = " + id + " не существует.");
-                }
-        );
+                () -> new AnyException("Пост с таким id = " + id + " не существует."));
     }
 }

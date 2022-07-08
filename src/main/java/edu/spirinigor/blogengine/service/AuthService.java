@@ -10,9 +10,11 @@ import edu.spirinigor.blogengine.api.response.LoginResponse;
 import edu.spirinigor.blogengine.api.response.LogoutResponse;
 import edu.spirinigor.blogengine.api.response.UserLoginResponse;
 import edu.spirinigor.blogengine.dto.ErrorsCreatingUserDto;
+import edu.spirinigor.blogengine.exception.AnyException;
 import edu.spirinigor.blogengine.mapper.UserMapper;
 import edu.spirinigor.blogengine.model.CaptchaCode;
 import edu.spirinigor.blogengine.repository.CaptchaCodeRepository;
+import edu.spirinigor.blogengine.repository.PostRepository;
 import edu.spirinigor.blogengine.repository.UserRepository;
 import org.apache.commons.io.FileUtils;
 import org.imgscalr.Scalr;
@@ -52,14 +54,16 @@ public class AuthService {
     private final UserMapper userMapper;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
+    private final PostRepository postRepository;
 
     public AuthService(CaptchaCodeRepository captchaCodeRepository, UserRepository userRepository,
-                       UserMapper userMapper, AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder) {
+                       UserMapper userMapper, AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder, PostRepository postRepository) {
         this.captchaCodeRepository = captchaCodeRepository;
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.authenticationManager = authenticationManager;
         this.passwordEncoder = passwordEncoder;
+        this.postRepository = postRepository;
     }
 
     public LoginResponse login(LoginRequest loginRequest) {
@@ -133,16 +137,12 @@ public class AuthService {
 
     private LoginResponse getLoginResponse(String email) {
         edu.spirinigor.blogengine.model.User currentUser = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("user not found" + email));
-
-        UserLoginResponse userLoginResponse = new UserLoginResponse();
-        userLoginResponse.setId(currentUser.getId());
-        userLoginResponse.setEmail(currentUser.getEmail());
-        userLoginResponse.setModeration(currentUser.getIsModerator() == 1);
-        userLoginResponse.setName(currentUser.getName());
-        userLoginResponse.setSettings(true);
-        userLoginResponse.setModerationCount(0);
-
+                .orElseThrow(() -> new AnyException("Пользователь с таким " + email+" не найден"));
+        UserLoginResponse userLoginResponse = userMapper.toUserLoginResponse(currentUser);
+        if (currentUser.getIsModerator() == 1) {
+            long count = postRepository.findAllByStatusNew().size();
+            userLoginResponse.setModerationCount((int) count);
+        }
         LoginResponse loginResponse = new LoginResponse();
         loginResponse.setResult(true);
         loginResponse.setUserLoginResponse(userLoginResponse);

@@ -41,9 +41,7 @@ public class PostCommentService {
 
     private PostComment getPostCommentById(int id) {
         return postCommentRepository.findById(id).orElseThrow(
-                () -> {
-                    throw new AnyException("Комментарий с таким id = " + id + " не существует.");
-                }
+                () -> new AnyException("Комментарий с таким id = " + id + " не существует.")
         );
     }
 }

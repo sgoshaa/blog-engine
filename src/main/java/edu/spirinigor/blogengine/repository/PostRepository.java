@@ -83,4 +83,7 @@ public interface PostRepository extends JpaRepository<Post, Integer>, JpaSpecifi
 
     List<Post>findAllByTimeLessThanEqualAndIsActiveAndModerationStatus(LocalDateTime time,short isActive,
                                                                       ModerationStatus status);
+
+    @Query("select p from Post p where p.moderationStatus = 'NEW' and p.moderator = null")
+    List<Post>findAllByStatusNew();
 }
