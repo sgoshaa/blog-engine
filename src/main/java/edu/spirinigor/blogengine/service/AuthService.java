@@ -16,8 +16,9 @@ import edu.spirinigor.blogengine.model.CaptchaCode;
 import edu.spirinigor.blogengine.repository.CaptchaCodeRepository;
 import edu.spirinigor.blogengine.repository.PostRepository;
 import edu.spirinigor.blogengine.repository.UserRepository;
+import edu.spirinigor.blogengine.util.ImageUtils;
+import edu.spirinigor.blogengine.util.UserUtils;
 import org.apache.commons.io.FileUtils;
-import org.imgscalr.Scalr;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -54,15 +55,17 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
     private final PostRepository postRepository;
+    private final ImageUtils imageUtils;
 
     public AuthService(CaptchaCodeRepository captchaCodeRepository, UserRepository userRepository,
-                       UserMapper userMapper, AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder, PostRepository postRepository) {
+                       UserMapper userMapper, AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder, PostRepository postRepository, ImageUtils imageUtils) {
         this.captchaCodeRepository = captchaCodeRepository;
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.authenticationManager = authenticationManager;
         this.passwordEncoder = passwordEncoder;
         this.postRepository = postRepository;
+        this.imageUtils = imageUtils;
     }
 
     public LoginResponse login(LoginRequest loginRequest) {
@@ -121,7 +124,7 @@ public class AuthService {
         if (isCorrectEmail(userDto.getEmail())
                 && isCorrectCaptcha(userDto.getCaptcha(), userDto.getCaptchaSecret())
                 && isCorrectName(userDto.getName())
-                && isCorrectPassword(userDto.getPassword())
+                && UserUtils.isCorrectPassword(userDto.getPassword())
         ) {
             userResponse.setResult(true);
             edu.spirinigor.blogengine.model.User user = userMapper.dtoToUser(userDto);
@@ -136,7 +139,7 @@ public class AuthService {
 
     private LoginResponse getLoginResponse(String email) {
         edu.spirinigor.blogengine.model.User currentUser = userRepository.findByEmail(email)
-                .orElseThrow(() -> new AnyException("Пользователь с таким " + email+" не найден"));
+                .orElseThrow(() -> new AnyException("Пользователь с таким " + email + " не найден"));
         UserLoginResponse userLoginResponse = userMapper.toUserLoginResponse(currentUser);
         if (currentUser.getIsModerator() == 1) {
             long count = postRepository.findAllByStatusNew().size();
@@ -163,9 +166,6 @@ public class AuthService {
         return bySecretCode.getCode().equals(captcha);
     }
 
-    private Boolean isCorrectPassword(String password) {
-        return password.length() >= 6;
-    }
 
     private ErrorsCreatingUserDto checkUser(CreateUserRequest userDto) {
         ErrorsCreatingUserDto errorsCreatingUserDto = new ErrorsCreatingUserDto();
@@ -178,7 +178,7 @@ public class AuthService {
         if (!isCorrectCaptcha(userDto.getCaptcha(), userDto.getCaptchaSecret())) {
             errorsCreatingUserDto.setCaptcha("Код с картинки введён неверно");
         }
-        if (!isCorrectPassword(userDto.getPassword())) {
+        if (!UserUtils.isCorrectPassword(userDto.getPassword())) {
             errorsCreatingUserDto.setPassword("Пароль короче 6-ти символов");
         }
         return errorsCreatingUserDto;
@@ -202,14 +202,9 @@ public class AuthService {
     private String getImageAsString(String name) throws Exception {
         File file = new File(name);
         BufferedImage originalImage = ImageIO.read(file);
-        BufferedImage bufferedImage = resizeImage(originalImage, TARGET_WIDTH, TARGET_HEIGHT);
+        BufferedImage bufferedImage = imageUtils.resizeImage(originalImage, TARGET_WIDTH, TARGET_HEIGHT);
         ImageIO.write(bufferedImage, "PNG", file);
         return generatedBase64(file.getAbsolutePath());
-    }
-
-    private BufferedImage resizeImage(BufferedImage originalImage, int targetWidth, int targetHeight) throws Exception {
-        return Scalr.resize(originalImage, Scalr.Method.AUTOMATIC, Scalr.Mode.FIT_EXACT, targetWidth
-                , targetHeight, Scalr.OP_ANTIALIAS);
     }
 
     private String generatedBase64(String filePath) throws IOException {

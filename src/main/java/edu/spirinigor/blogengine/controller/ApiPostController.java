@@ -2,11 +2,13 @@ package edu.spirinigor.blogengine.controller;
 
 import edu.spirinigor.blogengine.api.request.CreatePostRequest;
 import edu.spirinigor.blogengine.api.request.ModerationRequest;
+import edu.spirinigor.blogengine.api.request.PostLikeOrDisLikeRequest;
 import edu.spirinigor.blogengine.api.response.Response;
 import edu.spirinigor.blogengine.api.response.CalendarResponse;
 import edu.spirinigor.blogengine.api.response.ListPostResponse;
 import edu.spirinigor.blogengine.api.response.PostResponse;
 import edu.spirinigor.blogengine.service.PostService;
+import edu.spirinigor.blogengine.service.PostVotesService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,9 +28,11 @@ import java.sql.Date;
 public class ApiPostController {
 
     private final PostService postService;
+    private final PostVotesService postVotesService;
 
-    public ApiPostController(PostService postService) {
+    public ApiPostController(PostService postService, PostVotesService postVotesService) {
         this.postService = postService;
+        this.postVotesService = postVotesService;
     }
 
     @GetMapping("post")
@@ -115,4 +119,15 @@ public class ApiPostController {
     public ResponseEntity<Response> moderationPost(@RequestBody ModerationRequest request) {
         return ResponseEntity.ok(postService.moderationPost(request));
     }
+
+    @PostMapping("post/like")
+    public ResponseEntity<Response> putLike(@RequestBody PostLikeOrDisLikeRequest postLikeOrDisLikeRequest){
+        return ResponseEntity.ok(postVotesService.putLike(postLikeOrDisLikeRequest));
+    }
+
+    @PostMapping("post/dislike")
+    public ResponseEntity<Response> putDisLike(@RequestBody PostLikeOrDisLikeRequest postLikeOrDisLikeRequest){
+        return ResponseEntity.ok(postVotesService.putDisLike(postLikeOrDisLikeRequest));
+    }
+
 }

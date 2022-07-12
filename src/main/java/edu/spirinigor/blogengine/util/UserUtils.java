@@ -33,4 +33,8 @@ public class UserUtils {
         User user = userOptional.get();
         return user;
     }
+
+    public static Boolean isCorrectPassword(String password) {
+        return password.length() >= 6;
+    }
 }
