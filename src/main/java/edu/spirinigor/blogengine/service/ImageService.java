@@ -1,6 +1,7 @@
 package edu.spirinigor.blogengine.service;
 
 import edu.spirinigor.blogengine.exception.ImageException;
+import edu.spirinigor.blogengine.util.UserUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,18 +26,13 @@ public class ImageService {
             String imageExtension = getImageExtension(file.getContentType());
             String dir = createDir(ROOT_DIRECTORY_NAME);
             copyLocation = Paths
-                    .get(dir + File.separator + getRandomString(9) + imageExtension);
+                    .get(dir + File.separator + UserUtils.getRandomString(9) + imageExtension);
             Files.copy(file.getInputStream(), copyLocation, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             e.printStackTrace();
         }
         assert copyLocation != null;
         return copyLocation.toString();
-    }
-
-    private String getRandomString(int count) {
-        String s = RandomStringUtils.randomAlphanumeric(count);
-        return s.toLowerCase();
     }
 
     private String createDir(String dir) throws IOException {
@@ -47,7 +43,7 @@ public class ImageService {
         String folder = dir;
         Path path;
         for (int i = 0; i < NUMBER_SUB_FOLDERS; i++) {
-            path = Paths.get(folder + File.separator + getRandomString(2));
+            path = Paths.get(folder + File.separator + UserUtils.getRandomString(2));
             if (!Files.exists(path)) {
                 Files.createDirectory(path);
             }

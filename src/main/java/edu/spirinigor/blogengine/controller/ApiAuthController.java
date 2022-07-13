@@ -2,11 +2,13 @@ package edu.spirinigor.blogengine.controller;
 
 import edu.spirinigor.blogengine.api.request.CreateUserRequest;
 import edu.spirinigor.blogengine.api.request.LoginRequest;
+import edu.spirinigor.blogengine.api.request.PasswordRecoveryRequest;
 import edu.spirinigor.blogengine.api.response.CaptchaResponse;
 import edu.spirinigor.blogengine.api.response.LoginResponse;
 import edu.spirinigor.blogengine.api.response.LogoutResponse;
 import edu.spirinigor.blogengine.api.response.Response;
 import edu.spirinigor.blogengine.service.AuthService;
+import edu.spirinigor.blogengine.service.EmailService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,9 +24,11 @@ import java.security.Principal;
 public class ApiAuthController {
 
     private final AuthService authService;
+    private final EmailService emailService;
 
-    public ApiAuthController(AuthService authService) {
+    public ApiAuthController(AuthService authService, EmailService emailService) {
         this.authService = authService;
+        this.emailService = emailService;
     }
 
     @GetMapping("check")
@@ -51,5 +55,15 @@ public class ApiAuthController {
     @GetMapping("logout")
     public ResponseEntity<LogoutResponse> logout(){
         return ResponseEntity.ok(authService.logout());
+    }
+
+    @PostMapping("restore")
+    public ResponseEntity<Response> passwordRecovery(@RequestBody PasswordRecoveryRequest passwordRecoveryRequest){
+        return ResponseEntity.ok(emailService.sendRecoveryEmail(passwordRecoveryRequest));
+    }
+
+    @PostMapping("password")
+    public ResponseEntity<Response>changePassword(@RequestBody PasswordRecoveryRequest passwordRecoveryRequest){
+        return ResponseEntity.ok(authService.changePassword(passwordRecoveryRequest));
     }
 }

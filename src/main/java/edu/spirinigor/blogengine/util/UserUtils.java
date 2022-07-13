@@ -2,6 +2,7 @@ package edu.spirinigor.blogengine.util;
 
 import edu.spirinigor.blogengine.model.User;
 import edu.spirinigor.blogengine.repository.UserRepository;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -36,5 +37,10 @@ public class UserUtils {
 
     public static Boolean isCorrectPassword(String password) {
         return password.length() >= 6;
+    }
+
+    public static String getRandomString(int count) {
+        String s = RandomStringUtils.randomAlphanumeric(count);
+        return s.toLowerCase();
     }
 }
