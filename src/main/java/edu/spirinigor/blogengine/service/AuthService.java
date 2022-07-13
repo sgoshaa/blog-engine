@@ -4,6 +4,7 @@ import com.github.cage.Cage;
 import com.github.cage.YCage;
 import edu.spirinigor.blogengine.api.request.CreateUserRequest;
 import edu.spirinigor.blogengine.api.request.LoginRequest;
+import edu.spirinigor.blogengine.api.request.PasswordRecoveryRequest;
 import edu.spirinigor.blogengine.api.response.CaptchaResponse;
 import edu.spirinigor.blogengine.api.response.Response;
 import edu.spirinigor.blogengine.api.response.LoginResponse;
@@ -19,6 +20,7 @@ import edu.spirinigor.blogengine.repository.UserRepository;
 import edu.spirinigor.blogengine.util.ImageUtils;
 import edu.spirinigor.blogengine.util.UserUtils;
 import org.apache.commons.io.FileUtils;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -40,6 +42,9 @@ import java.nio.file.Path;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -137,6 +142,50 @@ public class AuthService {
         return userResponse;
     }
 
+    @Transactional
+    public Response changePassword(PasswordRecoveryRequest passwordRecoveryRequest) {
+        Optional<edu.spirinigor.blogengine.model.User> userOptional = userRepository
+                .findByCode(passwordRecoveryRequest.getCode());
+        Map<String, String> map = checkParametersForPasswordRecovery(passwordRecoveryRequest, userOptional);
+        Response response = new Response();
+        if (!map.isEmpty()) {
+            response.setResult(false);
+            response.setErrors(map);
+            return response;
+        }
+        edu.spirinigor.blogengine.model.User user = userOptional.get();
+        user.setPassword(passwordEncoder.encode(passwordRecoveryRequest.getPassword()));
+        userRepository.save(user);
+        response.setResult(true);
+        return response;
+    }
+
+    private Map<String, String> checkParametersForPasswordRecovery(
+            PasswordRecoveryRequest passwordRecoveryRequest,
+            Optional<edu.spirinigor.blogengine.model.User> userOptional) {
+
+        HashMap<String, String> errors = new HashMap<>();
+
+        if (!isCorrectCode(userOptional, passwordRecoveryRequest.getCode())) {
+            errors.put("code", "\"Ссылка для восстановления пароля устарела." +
+                    "<a href=\"/auth/restore\">Запросить ссылку снова</a>\"");
+        }
+        if (!isCorrectCaptcha(passwordRecoveryRequest.getCaptcha(), passwordRecoveryRequest.getCaptchaSecret())) {
+            errors.put("captcha", "Код с картинки введён неверно");
+        }
+        if (!UserUtils.isCorrectPassword(passwordRecoveryRequest.getPassword())) {
+            errors.put("password", "Пароль короче 6-ти символов");
+        }
+        return errors;
+    }
+
+    private Boolean isCorrectCode(Optional<edu.spirinigor.blogengine.model.User> user, String code) {
+        if (user.isEmpty() || !user.get().getCode().equals(code)) {
+            return false;
+        }
+        return true;
+    }
+
     private LoginResponse getLoginResponse(String email) {
         edu.spirinigor.blogengine.model.User currentUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new AnyException("Пользователь с таким " + email + " не найден"));
@@ -165,7 +214,6 @@ public class AuthService {
         CaptchaCode bySecretCode = captchaCodeRepository.findBySecretCode(secretCode).get();
         return bySecretCode.getCode().equals(captcha);
     }
-
 
     private ErrorsCreatingUserDto checkUser(CreateUserRequest userDto) {
         ErrorsCreatingUserDto errorsCreatingUserDto = new ErrorsCreatingUserDto();

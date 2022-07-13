@@ -1,4 +1,6 @@
 spring:
+  logging:
+    level: debug
   datasource:
 #    url: jdbc:postgresql://localhost:5432/blog_engine
 #    username: postgres
@@ -13,11 +15,21 @@ spring:
   servlet:
     multipart:
       enabled: true
-      max-file-size: 2MB
+      max-file-size: 5MB
+  mail:
+    host: smtp.yandex.ru
+    port: 465
+    username: sgoshaa@yandex.ru
+    password: sntcaabcnwezojun
+    properties:
+      "mail.smtp.ssl.enable": true
+      "mail.smtp.auth": true
 
-blog.title: DevPub
-blog.subtitle: Рассказы разработчиков
-blog.phone: +7 903 666-44-55
-blog.email: sgoshaa@yandex.ru
-blog.copyright: Игорь Спирин
-blog.copyrightFrom: 2021
+blog:
+  main-link: http://localhost:8080
+  title: DevPub
+  subtitle: Рассказы разработчиков
+  phone: +7 903 666-44-55
+  email: sgoshaa@yandex.ru
+  copyright: Игорь Спирин
+  copyrightFrom: 2021
