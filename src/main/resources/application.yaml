@@ -1,6 +1,4 @@
 spring:
-  logging:
-    level: debug
   datasource:
 #    url: jdbc:postgresql://localhost:5432/blog_engine
 #    username: postgres
