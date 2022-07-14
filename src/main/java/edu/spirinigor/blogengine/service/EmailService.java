@@ -43,14 +43,14 @@ public class EmailService {
 
     private String sendMessage(String to) {
         MimeMessage mimeMessage = emailSender.createMimeMessage();
-        MimeMessageHelper message = new MimeMessageHelper(mimeMessage, "utf-8");
+        MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, "utf-8");
         String hash = UserUtils.getRandomString(25);
         String htmlMsg = createMessage(hash);
         try {
-            message.setFrom("DevPub <sgoshaa@yandex.ru>");
-            message.setTo(to);
-            message.setSubject("Восстановление пароля для DevPub");
-            message.setText(htmlMsg, true);
+            messageHelper.setFrom("DevPub <sgoshaa@yandex.ru>");
+            messageHelper.setTo(to);
+            messageHelper.setSubject("Восстановление пароля для DevPub");
+            messageHelper.setText(htmlMsg, true);
             emailSender.send(mimeMessage);
         } catch (MessagingException e) {
             e.printStackTrace();
@@ -60,9 +60,8 @@ public class EmailService {
 
     private String createMessage(String hash) {
         String link = MAIN_LINK + "/login/change-password/" + hash;
-        String htmlMsg = "<body>Перейдите по данной ссылки для восстановления пароля: " +
+        return "<body>Перейдите по данной ссылки для восстановления пароля: " +
                 "<a href=\"" + link + "\">Восстановление пароля</a></body>";
-        return htmlMsg;
     }
 
 }

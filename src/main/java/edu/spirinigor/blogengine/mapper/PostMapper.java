@@ -56,14 +56,9 @@ public interface PostMapper {
     @Mapping(target = "title", source = "updatedPost.title")
     @Mapping(target = "viewCount", source = "currentPost.viewCount")
     @Mapping(target = "postComments", source = "currentPost.postComments")
-    @Mapping(target = "tags",ignore = true)// expression = "java(getOnlyUniqueTags(currentPost.getTags(),updatedPost.getTags()))")//source = "updatedPost.tags")
+    @Mapping(target = "tags",ignore = true)
     @Mapping(target = "postVotes", source = "currentPost.postVotes")
     Post updatePost(Post currentPost, Post updatedPost);
-
-    default List<Tag> getOnlyUniqueTags(List<Tag> currentTags, List<Tag> updatedTags) {
-        updatedTags.addAll(currentTags);
-        return updatedTags.stream().distinct().collect(Collectors.toList());
-    }
 
     default ModerationStatus setModerationStatus() {
         return ModerationStatus.NEW;

@@ -1,6 +1,7 @@
 package edu.spirinigor.blogengine.repository;
 
 import edu.spirinigor.blogengine.model.Post;
+import edu.spirinigor.blogengine.model.User;
 import edu.spirinigor.blogengine.model.enums.ModerationStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -81,9 +82,12 @@ public interface PostRepository extends JpaRepository<Post, Integer>, JpaSpecifi
             "and p.moderationStatus = :status")
     Page<Post> findAllForModerationMy(Integer moderatorId, ModerationStatus status, Pageable pageable);
 
-    List<Post>findAllByTimeLessThanEqualAndIsActiveAndModerationStatus(LocalDateTime time,short isActive,
-                                                                      ModerationStatus status);
+    List<Post> findAllByTimeLessThanEqualAndIsActiveAndModerationStatus(LocalDateTime time, short isActive,
+                                                                        ModerationStatus status);
 
     @Query("select p from Post p where p.moderationStatus = 'NEW' and p.moderator = null")
-    List<Post>findAllByStatusNew();
+    List<Post> findAllByStatusNew();
+
+    List<Post> findAllByUserAndIsActive(User user,short isActive);
+
 }

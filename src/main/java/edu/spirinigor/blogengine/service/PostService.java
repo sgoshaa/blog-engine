@@ -43,14 +43,16 @@ public class PostService {
     private final SearchPostSpecification postSpecification;
     private final UserRepository userRepository;
     private final TagService tagService;
+    private final SettingService settingService;
 
     public PostService(PostRepository postRepository, Pagination pagination, SearchPostSpecification postSpecification,
-                       UserRepository userRepository, TagService tagService) {
+                       UserRepository userRepository, TagService tagService, SettingService settingService) {
         this.postRepository = postRepository;
         this.pagination = pagination;
         this.postSpecification = postSpecification;
         this.userRepository = userRepository;
         this.tagService = tagService;
+        this.settingService = settingService;
     }
 
     public ListPostResponse getListPost(Integer offset, Integer limit, String mode) {
@@ -199,8 +201,10 @@ public class PostService {
         post.setTags(tags);
         User currentUser = userRepository.findById(UserUtils.getIdCurrentUser()).get();
         post.setUser(currentUser);
+        if (!settingService.isPreModeration() && post.getIsActive() == (short) 1) {
+            post.setModerationStatus(ModerationStatus.ACCEPTED);
+        }
         postRepository.save(post);
-
         response.setResult(true);
         return response;
     }

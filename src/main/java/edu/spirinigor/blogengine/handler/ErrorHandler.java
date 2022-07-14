@@ -5,6 +5,8 @@ import edu.spirinigor.blogengine.dto.ExceptionDto;
 import edu.spirinigor.blogengine.dto.ImageDto;
 import edu.spirinigor.blogengine.exception.AnyException;
 import edu.spirinigor.blogengine.exception.ImageException;
+import edu.spirinigor.blogengine.exception.StatisticsNotPublicException;
+import edu.spirinigor.blogengine.exception.UserRegistrationException;
 import org.apache.tomcat.util.http.fileupload.impl.FileSizeLimitExceededException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -45,4 +47,19 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
         exceptionDto.setMessage(exception.getMessage());
         return new ResponseEntity<>(exceptionDto, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(UserRegistrationException.class)
+    public ResponseEntity<ExceptionDto> handlerUserRegistrationException(UserRegistrationException exception) {
+        ExceptionDto exceptionDto = new ExceptionDto();
+        exceptionDto.setMessage(exception.getMessage());
+        return new ResponseEntity<>(exceptionDto, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(StatisticsNotPublicException.class)
+    public ResponseEntity<ExceptionDto> handlerStatisticsNotPublicException(StatisticsNotPublicException exception) {
+        ExceptionDto exceptionDto = new ExceptionDto();
+        exceptionDto.setMessage(exception.getMessage());
+        return new ResponseEntity<>(exceptionDto, HttpStatus.UNAUTHORIZED);
+    }
+
 }

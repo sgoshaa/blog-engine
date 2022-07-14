@@ -21,7 +21,6 @@ import edu.spirinigor.blogengine.util.ImageUtils;
 import edu.spirinigor.blogengine.util.UserUtils;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Sort;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -61,18 +60,26 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
     private final PostRepository postRepository;
+    private final SettingService settingService;
     private final ImageUtils imageUtils;
     @Value("${blog.main-link}")
     private String MAIN_LINK;
 
-    public AuthService(CaptchaCodeRepository captchaCodeRepository, UserRepository userRepository,
-                       UserMapper userMapper, AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder, PostRepository postRepository, ImageUtils imageUtils) {
+    public AuthService(CaptchaCodeRepository captchaCodeRepository,
+                       UserRepository userRepository,
+                       UserMapper userMapper,
+                       AuthenticationManager authenticationManager,
+                       PasswordEncoder passwordEncoder,
+                       PostRepository postRepository,
+                       ImageUtils imageUtils,
+                       SettingService settingService) {
         this.captchaCodeRepository = captchaCodeRepository;
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.authenticationManager = authenticationManager;
         this.passwordEncoder = passwordEncoder;
         this.postRepository = postRepository;
+        this.settingService = settingService;
         this.imageUtils = imageUtils;
     }
 
@@ -128,7 +135,9 @@ public class AuthService {
 
     @Transactional
     public Response createUser(CreateUserRequest userDto) {
+        settingService.checkingPossibilityRegistration();
         Response userResponse = new Response();
+        userResponse.setResult(false);
         if (isCorrectEmail(userDto.getEmail())
                 && isCorrectCaptcha(userDto.getCaptcha(), userDto.getCaptchaSecret())
                 && isCorrectName(userDto.getName())
@@ -140,7 +149,7 @@ public class AuthService {
             userRepository.save(user);
             return userResponse;
         }
-        userResponse.setResult(false);
+
         userResponse.setErrors(checkUser(userDto));
         return userResponse;
     }
