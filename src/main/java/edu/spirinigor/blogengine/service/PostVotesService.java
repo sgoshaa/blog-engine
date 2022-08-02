@@ -38,6 +38,10 @@ public class PostVotesService {
         Post postById = postService.getPostById(postLikeOrDisLikeRequest.getPostId());
         Response response = new Response();
         response.setResult(true);
+        if (postById.getUser() == currentUser) {
+            response.setResult(false);
+            return response;
+        }
         if (byPostIdAndUserId.isEmpty()) {
             PostVotes postVotes = new PostVotes();
             postVotes.setPost(postById);
@@ -45,7 +49,7 @@ public class PostVotesService {
             postVotes.setValue(value);
             postVotes.setTime(LocalDateTime.now());
             postVotesRepository.save(postVotes);
-        } else if (byPostIdAndUserId.get().getValue() == - value) {
+        } else if (byPostIdAndUserId.get().getValue() == -value) {
             PostVotes currentPostVotes = byPostIdAndUserId.get();
             currentPostVotes.setValue(value);
             postVotesRepository.save(currentPostVotes);

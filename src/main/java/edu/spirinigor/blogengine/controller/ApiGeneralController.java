@@ -40,6 +40,7 @@ public class ApiGeneralController {
     }
 
     @PutMapping("/settings")
+    @PreAuthorize("hasAuthority('user:write')")
     public void putSettings(@RequestBody SettingsRequest settingsRequest){
         settingService.putGlobalSetting(settingsRequest);
     }

@@ -30,7 +30,7 @@ public class StatisticService {
     }
 
     public StatisticResponse getAllStatistic() {
-        if (settingService.isStatisticsIsPublic() && UserUtils.getCurrentUser().getIsModerator() == 0) {
+        if (!settingService.isStatisticsIsPublic() && UserUtils.getCurrentUser().getIsModerator() == 0) {
             throw new StatisticsNotPublicException("Статистика не публична");
         }
         List<Post> all = postRepository.findAll();

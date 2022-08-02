@@ -1,8 +1,10 @@
 package edu.spirinigor.blogengine.util;
 
+import edu.spirinigor.blogengine.exception.UserIsNotAuthorized;
 import edu.spirinigor.blogengine.model.User;
 import edu.spirinigor.blogengine.repository.UserRepository;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -27,9 +29,10 @@ public class UserUtils {
     public static User getCurrentUser() {
         SecurityContext context = SecurityContextHolder.getContext();
         Authentication authentication = context.getAuthentication();
-
+        if (authentication  instanceof AnonymousAuthenticationToken) {
+            throw new UserIsNotAuthorized("Пользователь не авторизован");
+        }
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-
         Optional<User> userOptional = userRepository.findByEmail(userDetails.getUsername());
         User user = userOptional.get();
         return user;
