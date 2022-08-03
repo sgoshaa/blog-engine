@@ -12,6 +12,6 @@ public class ProfileRequestDto {
     private String name;
     private String email;
     private String password;
-    private MultipartFile photo;
+    private Object photo;
     private Integer removePhoto;
 }

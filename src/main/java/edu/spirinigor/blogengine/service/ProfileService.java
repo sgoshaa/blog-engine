@@ -40,9 +40,12 @@ public class ProfileService {
             }
             currentUser.setPassword(passwordEncoder.encode(profileRequestDto.getPassword()));
         }
-        if (profileRequestDto.getPhoto() != null && !profileRequestDto.getPhoto().isEmpty()) {
-            String s = uploadingAvatar(request,profileRequestDto.getPhoto());
+        if (profileRequestDto.getPhoto() != null && !profileRequestDto.getPhoto().equals("") ) {
+            String s = uploadingAvatar(request, (MultipartFile) profileRequestDto.getPhoto());
             currentUser.setPhoto(s);
+        }
+        if (profileRequestDto.getPhoto().equals("")){
+            currentUser.setPhoto(null);
         }
         currentUser.setEmail(profileRequestDto.getEmail());
         currentUser.setName(profileRequestDto.getName());
