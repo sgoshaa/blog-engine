@@ -3,16 +3,30 @@ package edu.spirinigor.blogengine.service;
 import com.github.cage.Cage;
 import com.github.cage.YCage;
 import edu.spirinigor.blogengine.api.request.CreateUserRequest;
+import edu.spirinigor.blogengine.api.request.LoginRequest;
+import edu.spirinigor.blogengine.api.request.PasswordRecoveryRequest;
 import edu.spirinigor.blogengine.api.response.CaptchaResponse;
-import edu.spirinigor.blogengine.api.response.CreateUserResponse;
-import edu.spirinigor.blogengine.api.response.NoAuthCheckResponse;
+import edu.spirinigor.blogengine.api.response.Response;
+import edu.spirinigor.blogengine.api.response.LoginResponse;
+import edu.spirinigor.blogengine.api.response.LogoutResponse;
+import edu.spirinigor.blogengine.api.response.UserLoginResponse;
 import edu.spirinigor.blogengine.dto.ErrorsCreatingUserDto;
+import edu.spirinigor.blogengine.exception.AnyException;
 import edu.spirinigor.blogengine.mapper.UserMapper;
 import edu.spirinigor.blogengine.model.CaptchaCode;
 import edu.spirinigor.blogengine.repository.CaptchaCodeRepository;
+import edu.spirinigor.blogengine.repository.PostRepository;
 import edu.spirinigor.blogengine.repository.UserRepository;
+import edu.spirinigor.blogengine.util.ImageUtils;
+import edu.spirinigor.blogengine.util.UserUtils;
 import org.apache.commons.io.FileUtils;
-import org.imgscalr.Scalr;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,8 +39,14 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class AuthService {
@@ -37,17 +57,54 @@ public class AuthService {
     private final CaptchaCodeRepository captchaCodeRepository;
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final AuthenticationManager authenticationManager;
+    private final PasswordEncoder passwordEncoder;
+    private final PostRepository postRepository;
+    private final SettingService settingService;
+    private final ImageUtils imageUtils;
+    @Value("${blog.main-link}")
+    private String MAIN_LINK;
 
-    public AuthService(CaptchaCodeRepository captchaCodeRepository, UserRepository userRepository, UserMapper userMapper) {
+    public AuthService(CaptchaCodeRepository captchaCodeRepository,
+                       UserRepository userRepository,
+                       UserMapper userMapper,
+                       AuthenticationManager authenticationManager,
+                       PasswordEncoder passwordEncoder,
+                       PostRepository postRepository,
+                       ImageUtils imageUtils,
+                       SettingService settingService) {
         this.captchaCodeRepository = captchaCodeRepository;
         this.userRepository = userRepository;
         this.userMapper = userMapper;
+        this.authenticationManager = authenticationManager;
+        this.passwordEncoder = passwordEncoder;
+        this.postRepository = postRepository;
+        this.settingService = settingService;
+        this.imageUtils = imageUtils;
     }
 
-    public NoAuthCheckResponse authCheck() {
-        NoAuthCheckResponse noAuthCheckResponse = new NoAuthCheckResponse();
-        noAuthCheckResponse.setResult(false);
-        return noAuthCheckResponse;
+    public LoginResponse login(LoginRequest loginRequest) {
+        Authentication authenticate = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+
+        SecurityContextHolder.getContext().setAuthentication(authenticate);
+        User user = (User) authenticate.getPrincipal();
+
+        return getLoginResponse(user.getUsername());
+    }
+
+    public LoginResponse authCheck(Principal principal) {
+        if (principal == null) {
+            LoginResponse loginResponse = new LoginResponse();
+            loginResponse.setResult(false);
+            return loginResponse;
+        }
+        return getLoginResponse(principal.getName());
+    }
+
+    public LogoutResponse logout() {
+        SecurityContextHolder.clearContext();
+        return new LogoutResponse();
     }
 
     public CaptchaResponse getCaptcha() {
@@ -77,28 +134,82 @@ public class AuthService {
     }
 
     @Transactional
-    public CreateUserResponse createUser(CreateUserRequest userDto) {
-        CreateUserResponse createUserResponse = new CreateUserResponse();
-        if (isCorrectEmail(userDto.getEmail())
+    public Response createUser(CreateUserRequest userDto) {
+        settingService.checkingPossibilityRegistration();
+        Response userResponse = new Response();
+        userResponse.setResult(false);
+        if (UserUtils.isCorrectEmail(userDto.getEmail())
                 && isCorrectCaptcha(userDto.getCaptcha(), userDto.getCaptchaSecret())
-                && isCorrectName(userDto.getName())
-                && isCorrectPassword(userDto.getPassword())
+                && UserUtils.isCorrectName(userDto.getName())
+                && UserUtils.isCorrectPassword(userDto.getPassword())
         ) {
-            createUserResponse.setResult(true);
-            userRepository.save(userMapper.dtoToUser(userDto));
-            return createUserResponse;
+            userResponse.setResult(true);
+            edu.spirinigor.blogengine.model.User user = userMapper.dtoToUser(userDto);
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            userRepository.save(user);
+            return userResponse;
         }
-        createUserResponse.setResult(false);
-        createUserResponse.setErrorsCreatingUserDto(checkUser(userDto));
-        return createUserResponse;
+
+        userResponse.setErrors(checkUser(userDto));
+        return userResponse;
     }
 
-    private Boolean isCorrectEmail(String email) {
-        return userRepository.findByEmail(email) == null;
+    @Transactional
+    public Response changePassword(PasswordRecoveryRequest passwordRecoveryRequest) {
+        Optional<edu.spirinigor.blogengine.model.User> userOptional = userRepository
+                .findByCode(passwordRecoveryRequest.getCode());
+        Map<String, String> map = checkParametersForPasswordRecovery(passwordRecoveryRequest, userOptional);
+        Response response = new Response();
+        if (!map.isEmpty()) {
+            response.setResult(false);
+            response.setErrors(map);
+            return response;
+        }
+        edu.spirinigor.blogengine.model.User user = userOptional.get();
+        user.setPassword(passwordEncoder.encode(passwordRecoveryRequest.getPassword()));
+        user.setCode(null);
+        userRepository.save(user);
+        response.setResult(true);
+        return response;
     }
 
-    private Boolean isCorrectName(String name) {
-        return userRepository.findByName(name) == null;
+    private Map<String, String> checkParametersForPasswordRecovery(
+            PasswordRecoveryRequest passwordRecoveryRequest,
+            Optional<edu.spirinigor.blogengine.model.User> userOptional) {
+        HashMap<String, String> errors = new HashMap<>();
+
+        if (!isCorrectCode(userOptional, passwordRecoveryRequest.getCode())) {
+            errors.put("code", "\"Ссылка для восстановления пароля устарела." +
+                    "<a href=\"" + MAIN_LINK + "/auth/restore\">Запросить ссылку снова</a>\"");
+        }
+        if (!isCorrectCaptcha(passwordRecoveryRequest.getCaptcha(), passwordRecoveryRequest.getCaptchaSecret())) {
+            errors.put("captcha", "Код с картинки введён неверно");
+        }
+        if (!UserUtils.isCorrectPassword(passwordRecoveryRequest.getPassword())) {
+            errors.put("password", "Пароль короче 6-ти символов");
+        }
+        return errors;
+    }
+
+    private Boolean isCorrectCode(Optional<edu.spirinigor.blogengine.model.User> user, String code) {
+        if (user.isEmpty() || !user.get().getCode().equals(code)) {
+            return false;
+        }
+        return true;
+    }
+
+    private LoginResponse getLoginResponse(String email) {
+        edu.spirinigor.blogengine.model.User currentUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AnyException("Пользователь с таким " + email + " не найден"));
+        UserLoginResponse userLoginResponse = userMapper.toUserLoginResponse(currentUser);
+        if (currentUser.getIsModerator() == 1) {
+            long count = postRepository.findAllByStatusNew().size();
+            userLoginResponse.setModerationCount((int) count);
+        }
+        LoginResponse loginResponse = new LoginResponse();
+        loginResponse.setResult(true);
+        loginResponse.setUserLoginResponse(userLoginResponse);
+        return loginResponse;
     }
 
     private Boolean isCorrectCaptcha(String captcha, String secretCode) {
@@ -106,22 +217,18 @@ public class AuthService {
         return bySecretCode.getCode().equals(captcha);
     }
 
-    private Boolean isCorrectPassword(String password) {
-        return password.length() >= 6;
-    }
-
     private ErrorsCreatingUserDto checkUser(CreateUserRequest userDto) {
         ErrorsCreatingUserDto errorsCreatingUserDto = new ErrorsCreatingUserDto();
-        if (!isCorrectEmail(userDto.getEmail())) {
+        if (!UserUtils.isCorrectEmail(userDto.getEmail())) {
             errorsCreatingUserDto.setEmail("Этот e-mail уже зарегистрирован");
         }
-        if (!isCorrectName(userDto.getName())) {
-            errorsCreatingUserDto.setName("Имя указано неверно,такое уже существует");
+        if (!UserUtils.isCorrectName(userDto.getName())) {
+            errorsCreatingUserDto.setName("Имя указано неверно, использованы спец.символы: ! @ # $ % ^ & * () _");
         }
         if (!isCorrectCaptcha(userDto.getCaptcha(), userDto.getCaptchaSecret())) {
             errorsCreatingUserDto.setCaptcha("Код с картинки введён неверно");
         }
-        if (!isCorrectPassword(userDto.getPassword())) {
+        if (!UserUtils.isCorrectPassword(userDto.getPassword())) {
             errorsCreatingUserDto.setPassword("Пароль короче 6-ти символов");
         }
         return errorsCreatingUserDto;
@@ -145,14 +252,9 @@ public class AuthService {
     private String getImageAsString(String name) throws Exception {
         File file = new File(name);
         BufferedImage originalImage = ImageIO.read(file);
-        BufferedImage bufferedImage = resizeImage(originalImage, TARGET_WIDTH, TARGET_HEIGHT);
+        BufferedImage bufferedImage = imageUtils.resizeImage(originalImage, TARGET_WIDTH, TARGET_HEIGHT);
         ImageIO.write(bufferedImage, "PNG", file);
         return generatedBase64(file.getAbsolutePath());
-    }
-
-    private BufferedImage resizeImage(BufferedImage originalImage, int targetWidth, int targetHeight) throws Exception {
-        return Scalr.resize(originalImage, Scalr.Method.AUTOMATIC, Scalr.Mode.FIT_EXACT, targetWidth
-                , targetHeight, Scalr.OP_ANTIALIAS);
     }
 
     private String generatedBase64(String filePath) throws IOException {

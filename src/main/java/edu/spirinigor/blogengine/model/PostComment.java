@@ -26,6 +26,7 @@ public class PostComment {
     @JoinColumn(name = "post_id",nullable = false)
     private Post post;
 
+    @ToString.Exclude
     @ManyToOne
     @JoinColumn(name = "user_id",nullable = false)
     private User user;

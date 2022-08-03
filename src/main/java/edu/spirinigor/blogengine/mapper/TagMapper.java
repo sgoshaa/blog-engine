@@ -16,4 +16,8 @@ public interface TagMapper {
     @IterableMapping(qualifiedByName = "tagNameToString")
     List<String> toListTagName(List<Tag>tags);
 
+    Tag map(String name);
+
+    List<Tag> toListTag(List<String>tags);
+
 }

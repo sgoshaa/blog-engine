@@ -17,7 +17,7 @@ public class User {
     @Column(name = "is_moderator", nullable = false)
     private Short isModerator;
 
-    @Column(name = "reg_time",nullable = false )
+    @Column(name = "reg_time", nullable = false)
     private LocalDateTime regTime;
 
     @Column(nullable = false)
@@ -36,11 +36,14 @@ public class User {
     private String photo;
 
     @OneToMany(mappedBy = "user",
-              cascade = CascadeType.ALL)
+            cascade = CascadeType.ALL)
     private List<Post> postList;
 
     @OneToMany(mappedBy = "user",
-                cascade = CascadeType.ALL)
+            cascade = CascadeType.ALL)
     private List<PostComment> postComments;
 
+    public Role getRole() {
+        return isModerator == 1 ? Role.MODERATOR : Role.USER;
+    }
 }

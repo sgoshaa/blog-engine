@@ -7,13 +7,27 @@ spring:
     username: root
     password: root
   jpa:
-    show-sql: true
+    show-sql: false
     hibernate:
       ddl-auto: validate
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 6MB
+  mail:
+    host: smtp.yandex.ru
+    port: 465
+    username: ${MAIL_USER}
+    password: ${MAIL_PASSWORD}
+    properties:
+      "mail.smtp.ssl.enable": true
+      "mail.smtp.auth": true
 
-blog.title: DevPub
-blog.subtitle: Рассказы разработчиков
-blog.phone: +7 903 666-44-55
-blog.email: sgoshaa@yandex.ru
-blog.copyright: Игорь Спирин
-blog.copyrightFrom: 2021
+blog:
+  main-link: ${MAIN_LINK}
+  title: DevPub
+  subtitle: Рассказы разработчиков
+  phone: +7 903 666-44-55
+  email: sgoshaa@yandex.ru
+  copyright: Игорь Спирин
+  copyrightFrom: 2021
