@@ -2,6 +2,7 @@ package edu.spirinigor.blogengine.controller;
 
 import edu.spirinigor.blogengine.service.ImageService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,6 +21,7 @@ public class ApiImageController {
 
     @PostMapping(value = "api/image",
             consumes = {"multipart/form-data"})
+    @PreAuthorize("hasAuthority('user:write')")
     public ResponseEntity<String> uploadImage(@RequestPart("image") MultipartFile image, HttpServletRequest request) {
         return ResponseEntity.ok(imageService.uploadImage(request, image));
     }

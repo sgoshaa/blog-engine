@@ -4,6 +4,7 @@ import edu.spirinigor.blogengine.api.request.PostCommentRequest;
 import edu.spirinigor.blogengine.api.response.PostCommentResponse;
 import edu.spirinigor.blogengine.service.PostCommentService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,6 +21,7 @@ public class ApiPostCommentController {
     }
 
     @PostMapping("comment")
+    @PreAuthorize("hasAuthority('user:write')")
     public ResponseEntity<PostCommentResponse> createComment(@RequestBody PostCommentRequest request){
         return ResponseEntity.ok(commentService.createComment(request));
     }

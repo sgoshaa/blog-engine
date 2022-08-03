@@ -57,9 +57,7 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler({StatisticsNotPublicException.class, UserIsNotAuthorized.class})
-    public ResponseEntity<ExceptionDto> handlerStatisticsNotPublicException(RuntimeException exception) {
-        ExceptionDto exceptionDto = new ExceptionDto();
-       // exceptionDto.setMessage(exception.getMessage());
+    public ResponseEntity<ExceptionDto> handlerStatisticsNotPublicException() {
         return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
     }
 

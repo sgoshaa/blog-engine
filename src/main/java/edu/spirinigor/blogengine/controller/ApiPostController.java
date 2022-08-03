@@ -44,7 +44,6 @@ public class ApiPostController {
     }
 
     @GetMapping("post/search")
-    // @PreAuthorize("hasAuthority('user:moderate')")
     public ResponseEntity<ListPostResponse> searchPost(
             @RequestParam(value = "offset", defaultValue = "0") Integer offset,
             @RequestParam(value = "limit", defaultValue = "10") Integer limit,
@@ -75,7 +74,6 @@ public class ApiPostController {
     }
 
     @GetMapping("post/{id}")
-    @PreAuthorize("hasAuthority('user:write')")
     public ResponseEntity<PostResponse> getPostById(@PathVariable Integer id) {
         PostResponse postById = postService.getPost(id);
         if (postById == null) {
@@ -103,6 +101,7 @@ public class ApiPostController {
     }
 
     @PostMapping("post")
+    @PreAuthorize("hasAuthority('user:write')")
     public ResponseEntity<Response> addPost(@RequestBody CreatePostRequest createPostRequest) {
         return ResponseEntity.ok(postService.addPost(createPostRequest));
     }
@@ -121,11 +120,13 @@ public class ApiPostController {
     }
 
     @PostMapping("post/like")
+    @PreAuthorize("hasAuthority('user:write')")
     public ResponseEntity<Response> putLike(@RequestBody PostLikeOrDisLikeRequest postLikeOrDisLikeRequest){
         return ResponseEntity.ok(postVotesService.putLike(postLikeOrDisLikeRequest));
     }
 
     @PostMapping("post/dislike")
+    @PreAuthorize("hasAuthority('user:write')")
     public ResponseEntity<Response> putDisLike(@RequestBody PostLikeOrDisLikeRequest postLikeOrDisLikeRequest){
         return ResponseEntity.ok(postVotesService.putDisLike(postLikeOrDisLikeRequest));
     }

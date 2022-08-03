@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -226,7 +227,7 @@ public class PostService {
 
     private void updateViewCount(Post byId) {
         Integer idCurrentUser = UserUtils.getIdCurrentUser();
-        if (byId.getModerator().getId() == idCurrentUser || byId.getUser().getId() == idCurrentUser) {
+        if (byId.getModerator() != null && (Objects.equals(byId.getModerator().getId(), idCurrentUser) || Objects.equals(byId.getUser().getId(), idCurrentUser))) {
             return;
         }
         byId.setViewCount(byId.getViewCount() + 1);
