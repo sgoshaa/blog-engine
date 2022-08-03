@@ -25,8 +25,7 @@ public class Scheduler {
     @Scheduled(fixedRate = 3600000)
     @Transactional
     public void deletingOutdatedCaptcha() {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime time = now.minusHours(1);
+        LocalDateTime time = LocalDateTime.now().minusHours(1);
         List<CaptchaCode> allOld = captchaCodeRepository.findAllOld(time);
         if (allOld.isEmpty()) {
             return;

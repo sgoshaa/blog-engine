@@ -29,7 +29,7 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
         ImageDto imageDto = new ImageDto();
         imageDto.setResult(false);
         imageDto.setErrors(errorImageDto);
-        return new ResponseEntity<>(imageDto, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(imageDto, HttpStatus.OK);
     }
 
     @ExceptionHandler(ImageException.class)

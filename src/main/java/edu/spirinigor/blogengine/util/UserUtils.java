@@ -12,6 +12,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class UserUtils {
@@ -45,5 +47,14 @@ public class UserUtils {
     public static String getRandomString(int count) {
         String s = RandomStringUtils.randomAlphanumeric(count);
         return s.toLowerCase();
+    }
+    public static Boolean isCorrectEmail(String email) {
+        return userRepository.findByEmail(email).orElse(null) == null;
+    }
+
+    public static Boolean isCorrectName(String name) {
+        Pattern pattern = Pattern.compile("[^!@#$%^&*()_]+");
+        Matcher matcher = pattern.matcher(name);
+        return matcher.matches();
     }
 }

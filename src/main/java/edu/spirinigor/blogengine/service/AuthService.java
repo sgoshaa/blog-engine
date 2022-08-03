@@ -138,9 +138,9 @@ public class AuthService {
         settingService.checkingPossibilityRegistration();
         Response userResponse = new Response();
         userResponse.setResult(false);
-        if (isCorrectEmail(userDto.getEmail())
+        if (UserUtils.isCorrectEmail(userDto.getEmail())
                 && isCorrectCaptcha(userDto.getCaptcha(), userDto.getCaptchaSecret())
-                && isCorrectName(userDto.getName())
+                && UserUtils.isCorrectName(userDto.getName())
                 && UserUtils.isCorrectPassword(userDto.getPassword())
         ) {
             userResponse.setResult(true);
@@ -212,16 +212,6 @@ public class AuthService {
         return loginResponse;
     }
 
-    private Boolean isCorrectEmail(String email) {
-        return userRepository.findByEmail(email).orElse(null) == null;
-    }
-
-    private Boolean isCorrectName(String name) {
-        Pattern pattern = Pattern.compile("[^!@#$%^&*()_]+");
-        Matcher matcher = pattern.matcher(name);
-        return matcher.matches();
-    }
-
     private Boolean isCorrectCaptcha(String captcha, String secretCode) {
         CaptchaCode bySecretCode = captchaCodeRepository.findBySecretCode(secretCode).get();
         return bySecretCode.getCode().equals(captcha);
@@ -229,10 +219,10 @@ public class AuthService {
 
     private ErrorsCreatingUserDto checkUser(CreateUserRequest userDto) {
         ErrorsCreatingUserDto errorsCreatingUserDto = new ErrorsCreatingUserDto();
-        if (!isCorrectEmail(userDto.getEmail())) {
+        if (!UserUtils.isCorrectEmail(userDto.getEmail())) {
             errorsCreatingUserDto.setEmail("Этот e-mail уже зарегистрирован");
         }
-        if (!isCorrectName(userDto.getName())) {
+        if (!UserUtils.isCorrectName(userDto.getName())) {
             errorsCreatingUserDto.setName("Имя указано неверно, использованы спец.символы: ! @ # $ % ^ & * () _");
         }
         if (!isCorrectCaptcha(userDto.getCaptcha(), userDto.getCaptchaSecret())) {

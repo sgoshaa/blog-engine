@@ -1,5 +1,6 @@
 package edu.spirinigor.blogengine.service;
 
+import ch.qos.logback.core.joran.conditional.IfAction;
 import edu.spirinigor.blogengine.api.request.ProfileRequestDto;
 import edu.spirinigor.blogengine.api.response.Response;
 import edu.spirinigor.blogengine.model.User;
@@ -15,10 +16,12 @@ import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.HashMap;
 
 @Service
 public class ProfileService {
 
+    public static final long MAX_SIZE_PHOTO = 5242880;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final ImageUtils imageUtils;
@@ -34,23 +37,26 @@ public class ProfileService {
     @Transactional
     public Response editingMyProfile(ProfileRequestDto profileRequestDto, HttpServletRequest request) {
         User currentUser = UserUtils.getCurrentUser();
+        HashMap<String, String> errors = checkingProfileEditingRequest(profileRequestDto, currentUser);
+        Response response = new Response();
+        if (!errors.isEmpty()) {
+            response.setErrors(errors);
+            response.setResult(false);
+            return response;
+        }
         if (profileRequestDto.getPassword() != null) {
-            if (!UserUtils.isCorrectPassword(profileRequestDto.getPassword())) {
-
-            }
             currentUser.setPassword(passwordEncoder.encode(profileRequestDto.getPassword()));
         }
-        if (profileRequestDto.getPhoto() != null && !profileRequestDto.getPhoto().equals("") ) {
+        if (profileRequestDto.getPhoto() != null && !profileRequestDto.getPhoto().equals("")) {
             String s = uploadingAvatar(request, (MultipartFile) profileRequestDto.getPhoto());
             currentUser.setPhoto(s);
         }
-        if (profileRequestDto.getPhoto().equals("")){
+        if (profileRequestDto.getPhoto() != null && profileRequestDto.getPhoto().equals("")) {
             currentUser.setPhoto(null);
         }
         currentUser.setEmail(profileRequestDto.getEmail());
         currentUser.setName(profileRequestDto.getName());
         userRepository.save(currentUser);
-        Response response = new Response();
         response.setResult(true);
         return response;
     }
@@ -67,5 +73,26 @@ public class ProfileService {
             e.printStackTrace();
         }
         return s;
+    }
+
+    private HashMap<String, String> checkingProfileEditingRequest(ProfileRequestDto profileRequestDto, User currentUser) {
+        HashMap<String, String> errors = new HashMap<>();
+        if (profileRequestDto.getPassword() != null && !UserUtils.isCorrectPassword(profileRequestDto.getPassword())) {
+            errors.put("password", "Пароль короче 6-ти символов");
+        }
+        if (profileRequestDto.getEmail() != null && !UserUtils.isCorrectEmail(profileRequestDto.getEmail())
+                && !profileRequestDto.getEmail().equals(currentUser.getEmail())) {
+            errors.put("email", "Этот e-mail уже зарегистрирован");
+        }
+        if (profileRequestDto.getName() != null && !UserUtils.isCorrectName(profileRequestDto.getName())) {
+            errors.put("name", "Имя указано неверно");
+        }
+        if (profileRequestDto.getPhoto() != null && !profileRequestDto.getPhoto().equals("")) {
+            MultipartFile photo = (MultipartFile) profileRequestDto.getPhoto();
+            if (photo.getSize() > MAX_SIZE_PHOTO) {
+                errors.put("photo", "Фото слишком большое, нужно не более 5 Мб");
+            }
+        }
+        return errors;
     }
 }
