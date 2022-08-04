@@ -23,6 +23,6 @@ public class ApiImageController {
             consumes = {"multipart/form-data"})
     @PreAuthorize("hasAuthority('user:write')")
     public ResponseEntity<String> uploadImage(@RequestPart("image") MultipartFile image, HttpServletRequest request) {
-        return ResponseEntity.ok(imageService.uploadImage(request, image));
+        return ResponseEntity.ok(imageService.uploadImage(image));
     }
 }

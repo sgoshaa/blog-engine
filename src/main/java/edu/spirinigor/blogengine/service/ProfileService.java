@@ -22,6 +22,7 @@ import java.util.HashMap;
 public class ProfileService {
 
     public static final long MAX_SIZE_PHOTO = 5242880;
+    public static final int SIZE_AVATAR = 36;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final ImageUtils imageUtils;
@@ -48,7 +49,7 @@ public class ProfileService {
             currentUser.setPassword(passwordEncoder.encode(profileRequestDto.getPassword()));
         }
         if (profileRequestDto.getPhoto() != null && !profileRequestDto.getPhoto().equals("")) {
-            String s = uploadingAvatar(request, (MultipartFile) profileRequestDto.getPhoto());
+            String s = imageService.uploadImagesToCloudinary((MultipartFile) profileRequestDto.getPhoto(), SIZE_AVATAR,SIZE_AVATAR);
             currentUser.setPhoto(s);
         }
         if (profileRequestDto.getPhoto() != null && profileRequestDto.getPhoto().equals("")) {
@@ -66,7 +67,7 @@ public class ProfileService {
         try {
             String realPath = request.getServletContext().getRealPath(s);
             File file = new File(realPath);
-            BufferedImage bufferedImage = imageUtils.resizeImage(ImageIO.read(file), 36, 36);
+            BufferedImage bufferedImage = imageUtils.resizeImage(ImageIO.read(file), SIZE_AVATAR, SIZE_AVATAR);
             file = new File(realPath);
             ImageIO.write(bufferedImage, "jpg", file);
         } catch (Exception e) {
